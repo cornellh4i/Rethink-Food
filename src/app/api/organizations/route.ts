@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const { data: items, error } = await supabase
       .from('organizations')
       .select('*')
-      .eq('org_type', 'restaurant')
+      .in('org_type', ['restaurant', 'cbo'])
       .order('updated_at', { ascending: false });
 
     if (error) {
