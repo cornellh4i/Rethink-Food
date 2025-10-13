@@ -77,7 +77,15 @@ export async function PATCH(request: NextRequest) {
       .update(updateData)
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
+
+    if (!data) {
+      return NextResponse.json({
+        success: false,
+        data: null,
+        error: "id not found"
+      }, { status: 404 });
+    }
 
     if (error) {
       console.error('Error updating organization:', error.message);
