@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     const stateBPChar = new Set(["NY"]);
 
     const name = requestData.name;
-    if (!name || typeof requestData.name != "string") {
+    if (!name || typeof requestData.name !== "string") {
       console.error(
         "Organization name was not provided or name is not a string"
       );
@@ -103,8 +103,9 @@ export async function POST(request: NextRequest) {
     }
 
     if (
-      !requestData.number_of_meals || ( typeof requestData.number_of_meals == "string" ||
-      !Number.isInteger(Number(requestData.number_of_meals)))
+      !requestData.number_of_meals ||
+      typeof requestData.number_of_meals !== "number" ||
+      !Number.isInteger(requestData.number_of_meals)
     ) {
       console.error(
         "Invalid type for number of meals or was it was not provided"
@@ -120,7 +121,7 @@ export async function POST(request: NextRequest) {
     }
 
     const street_address = requestData.street_address;
-    if (!street_address || typeof requestData.street_address != "string") {
+    if (!street_address || typeof requestData.street_address !== "string") {
       console.error(
         "Organization street address was not provided or street address is not a string"
       );
@@ -163,7 +164,7 @@ export async function POST(request: NextRequest) {
     }
 
     const zip = requestData.zip;
-    if (!zip || typeof requestData.zip != "string") {
+    if (!zip || typeof requestData.zip !== "string") {
       console.error(
         "Organization zip address was not provided or zip address is not a string"
       );
@@ -182,7 +183,8 @@ export async function POST(request: NextRequest) {
     const created_atTime = new Date(created_at);
     if (
       !created_at ||
-      (typeof created_at != "string" || isNaN(created_atTime.getTime()))
+      typeof created_at !== "string" ||
+      isNaN(created_atTime.getTime())
     ) {
       console.error("Created_at time was not provided or it is invalid");
       return NextResponse.json(
@@ -199,7 +201,8 @@ export async function POST(request: NextRequest) {
     const updatedTime = new Date(updated_at);
     if (
       !updated_at ||
-      (typeof created_at != "string" || isNaN(updatedTime.getTime()))
+      typeof updated_at !== "string" ||
+      isNaN(updatedTime.getTime())
     ) {
       console.error("Updated_at time was not provided or it is invalid");
       return NextResponse.json(
@@ -219,7 +222,14 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("Internal Server Error: ", error.message);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json(
+        {
+          success: false,
+          data: null,
+          error: "Internal Server Error",
+        },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json(
@@ -231,9 +241,13 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (e) {
-    console.error("Unexpected error in Post handler");
+    console.error("Unexpected error in Post handler", e);
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      {
+        success: false,
+        data: null,
+        error: "Internal Server Error",
+      },
       { status: 500 }
     );
   }
