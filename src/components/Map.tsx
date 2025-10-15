@@ -9,16 +9,20 @@ export default function Map() {
   const map = useRef<mapboxgl.Map | null>(null);
 
   useEffect(() => {
-    if (map.current) return; // initialize map only once
+    if (map.current) return;
+
     map.current = new mapboxgl.Map({
       container: mapContainer.current!,
       style: "mapbox://styles/mapbox/streets-v12",
-      center: [-74.5, 40], // starting position [lng, lat]
-      zoom: 9,
+      center: [-73.9836, 40.7469],
+      zoom: 14,
     });
+
+    new mapboxgl.Marker({ color: "#e63946" })
+      .setLngLat([-73.9836, 40.7469])
+      .setPopup(new mapboxgl.Popup().setHTML("<b>Rethink Food HQ</b><br>136 Madison Ave"))
+      .addTo(map.current);
   }, []);
 
-  return (
-    <div ref={mapContainer} className="w-full h-[500px]" />
-  );
+  return <div ref={mapContainer} className="w-full h-[500px]" />;
 }
