@@ -2,11 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "../../../../lib/supabase";
 import { validate as uuidValidate } from "uuid";
 
-export async function GET(request: NextRequest) {
-  const supabase = createServerSupabaseClient();
-  //TODO
-}
-
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = createServerSupabaseClient();
