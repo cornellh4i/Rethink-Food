@@ -1,10 +1,33 @@
 'use client'
+import { useEffect, useState } from "react";
 import Map from "../components/Map";
 import OrgList from "../components/OrgList";
 import { useRouter } from "next/navigation";
+import { supabase } from "../../lib/supabaseClient";
 
 export default function Home() {
   const router = useRouter()
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setUserEmail(session?.user?.email || null)
+    }
+
+    checkUser()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserEmail(session?.user?.email || null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    setUserEmail(null)
+  }
 
   return (
     <div className="flex flex-col h-screen">
@@ -21,12 +44,24 @@ export default function Home() {
           <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
             Filter by Area
           </button>
-          <button
-            onClick={() => router.push('/login')}
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-          >
-            Login
-          </button>
+          {userEmail ? (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-700">{userEmail}</span>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => router.push('/login')}
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+            >
+              Login
+            </button>
+          )}
         </div>
       </div>
 
