@@ -4,6 +4,7 @@ import Map from "../components/Map";
 import OrgList from "../components/OrgList";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabaseClient";
+import { FilterProvider } from "../context/FilterContext";
 
 export default function Home() {
   const router = useRouter()
@@ -30,6 +31,7 @@ export default function Home() {
   }
 
   return (
+    <FilterProvider>
     <div className="flex flex-col h-screen">
       <div className="bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center gap-2">
@@ -77,5 +79,6 @@ export default function Home() {
         </div>
       </div>
     </div>
+    </FilterProvider>
   );
 }
