@@ -5,6 +5,8 @@ import OrgList from "../components/OrgList";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabaseClient";
 import { FilterProvider } from "../context/FilterContext";
+import MetricBar from "@/components/MetricBar";
+import FilterBar from "@/components/FilterBar";
 
 export default function Home() {
   const router = useRouter()
@@ -33,6 +35,10 @@ export default function Home() {
   return (
     <FilterProvider>
     <div className="flex flex-col h-screen">
+      <MetricBar />
+      <div className="bg-white border-b border-gray-200 px-4 py-3 mt-[20px]">
+        <FilterBar />
+      </div>
       <div className="bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center gap-2">
           <input
