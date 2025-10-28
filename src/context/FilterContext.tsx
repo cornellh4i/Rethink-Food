@@ -37,6 +37,13 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setFilters((prev) => ({ ...prev, [key]: !prev[key] }));
     setIsFilterActive(true);
 
+    if (!Array.isArray(allDestinations)) {
+      console.warn("allDestinations is not an array yet");
+      return;
+    }
+
+ 
+
     if (key === "All") {
       setFilteredDestinations(allDestinations);
       return;

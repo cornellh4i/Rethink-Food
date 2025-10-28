@@ -31,7 +31,7 @@ export default function MetricBar({}){
 
     return (
         <>
-            <div className = "fixed top-0 left-0 right-0 flex gap-2 justify-around text-white bg-green-400">
+            <div className = "fixed top-0 left-0 right-0 flex gap-2 justify-around text-white bg-green-400 mb-30 p-1" >
                 <p>Total Restaurants: {totalRestaurants}</p>
 
                 <p>Total CBOs: {totalCBO} </p>
