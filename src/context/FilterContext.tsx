@@ -3,8 +3,8 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 interface FilterContextType {
   filters: Record<string, boolean>;
   setFilters: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
-  filteredDestinations: any[];
-  setFilteredDestinations: React.Dispatch<React.SetStateAction<any[]>>;
+  filteredDestinations: any[] | undefined;
+  setFilteredDestinations: React.Dispatch<React.SetStateAction<any[] | undefined>>;
   isFilterActive: boolean;
   applyFilter: (key: string) => void;
   resetFilters: () => void;
@@ -15,7 +15,7 @@ const FilterContext = createContext<FilterContextType | undefined>(undefined);
 export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [filters, setFilters] = useState<Record<string, boolean>>({});
   const [allDestinations, setAllDestinations] = useState<any[]>([]);
-  const [filteredDestinations, setFilteredDestinations] = useState<any[]>([]);
+  const [filteredDestinations, setFilteredDestinations] = useState<any[] | undefined>(undefined);
   const [isFilterActive, setIsFilterActive] = useState(false);
 
   // Fetch all orgs (restaurants + CBOs) on mount
@@ -24,8 +24,9 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       try {
         const res = await fetch("/api/organizations");
         const data = await res.json();
-        setAllDestinations(data);
-        setFilteredDestinations(data);
+        const orgs = data.organizations || [];
+        setAllDestinations(orgs);
+        setFilteredDestinations(orgs);
       } catch (err) {
         console.error("Error fetching organizations:", err);
       }
@@ -36,6 +37,13 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const applyFilter = (key: string) => {
     setFilters((prev) => ({ ...prev, [key]: !prev[key] }));
     setIsFilterActive(true);
+
+    if (!Array.isArray(allDestinations)) {
+      console.warn("allDestinations is not an array yet");
+      return;
+    }
+
+ 
 
     if (key === "All") {
       setFilteredDestinations(allDestinations);
