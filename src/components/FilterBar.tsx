@@ -20,32 +20,24 @@ export default function FilterBar({}){
 
     return (
       <>
-        <div className="bg-transparent flex gap-2 flex-wrap ">
-          <input
-            type="search"
-            placeholder="Search..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          ></input>
-
-          {BOROUGHS.map((borough) => (
-            <button
-              key={borough}
-              onClick={() => setFilter(borough)}
-              className={`${
-                activeBorough === borough ? "bg-green-500" : "bg-gray-300"} px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50`}
-            >
-              {borough}
-            </button>
-          ))}
-          <div></div>
+        {/* Filter buttons overlaid on the map */}
+        <div className="absolute top-4 left-4 z-10">
+          <div className="flex gap-2 overflow-x-auto">
+            {BOROUGHS.map((borough) => (
+              <button
+                key={borough}
+                onClick={() => setFilter(borough)}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 whitespace-nowrap shadow-sm ${
+                  activeBorough === borough 
+                    ? "bg-green-400 text-white shadow-md" 
+                    : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+                }`}
+              >
+                {borough}
+              </button>
+            ))}
+          </div>
         </div>
       </>
     );
 }
-
-// All
-// Manhattan
-// Brooklyn
-// Queens
-// Bronx
-// Staten Island

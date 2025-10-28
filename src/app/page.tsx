@@ -36,20 +36,17 @@ export default function Home() {
     <FilterProvider>
       <div className="flex flex-col h-screen">
         <MetricBar />
-        <div className="bg-white border-b border-gray-200 px-4 py-3 mt-[50px] sm:mt-[25px]">
-          <FilterBar />
-        </div>
-       
-
-        <div className="flex flex-1 overflow-hidden">
+        
+        <div className="flex flex-1 overflow-hidden mt-[32px]">
           <div className="w-2/5 border-r border-gray-300 overflow-y-auto bg-gray-50">
             <div className="p-4">
               <OrgList />
             </div>
           </div>
 
-          <div className="w-3/5">
+          <div className="w-3/5 relative">
             <Map />
+            <FilterBar />
           </div>
         </div>
       </div>

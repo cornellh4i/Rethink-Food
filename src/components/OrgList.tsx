@@ -40,6 +40,15 @@ export default function OrgList() {
 
   return (
     <div className="space-y-4">
+      {/* Search bar at the top of the sidebar */}
+      <div className="mb-4">
+        <input
+          type="search"
+          placeholder="Search..."
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
       {orgs.map((org) => (
         <div 
           key={org.id} 
