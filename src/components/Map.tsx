@@ -1,6 +1,7 @@
 "use client"
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
+import { useFilter } from '@/context/FilterContext';
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
@@ -33,25 +34,11 @@ async function geocodeAddress(address: string): Promise<[number, number] | null>
 export default function Map() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const [organizations, setOrganizations] = useState<Array<any>>([]);;
+  const { filteredDestinations } = useFilter();
   const [mapReady, setMapReady] = useState<boolean>(false);
+  const [markers, setMarkers] = useState<mapboxgl.Marker[]>([]);
 
-  useEffect(() => {
-    async function fetchOrganizations() {
-      try {
-        const response = await fetch("/api/organizations");
-        const data = await response.json();
-                
-        if (data.success) {
-          setOrganizations(data.organizations);
-        }
-      } catch (error) {
-        console.error("Error fetching organizations:", error);
-      }
-    }
-
-    fetchOrganizations();
-  }, []);
+  // Remove old fetch effect - now using context data
 
   useEffect(() => {
     if (map.current) return;
@@ -74,23 +61,32 @@ export default function Map() {
   }, []);
 
   useEffect(() => {
-    if (!mapReady || !map.current || organizations.length === 0) return;
+    if (!mapReady || !map.current || !filteredDestinations || !Array.isArray(filteredDestinations) || filteredDestinations.length === 0) return;
+
+    // Clear existing markers
+    markers.forEach(marker => marker.remove());
+    setMarkers([]);
 
     async function addMarkers() {
-      for (const org of organizations) {
+      const newMarkers: mapboxgl.Marker[] = [];
+      
+      for (const org of filteredDestinations) {
         const coords = await geocodeAddress(org.street_address);
         if (coords) {
           const markerColor = org.org_type === "restaurant" ? restaurantColor : cboColor;
-          new mapboxgl.Marker({ color: markerColor })
+          const marker = new mapboxgl.Marker({ color: markerColor })
             .setLngLat(coords)
             .setPopup(new mapboxgl.Popup().setHTML(`<b>${org.name}</b><br>${org.street_address}`))
             .addTo(map.current!);
+          newMarkers.push(marker);
         }
       }
+      
+      setMarkers(newMarkers);
     }
 
     addMarkers();
-  }, [organizations, mapReady]);
+  }, [filteredDestinations, mapReady]);
 
   return <div ref={mapContainer} className="w-full h-[500px]" />;
 }
