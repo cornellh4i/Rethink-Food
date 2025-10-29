@@ -8,6 +8,7 @@ interface FilterContextType {
   isFilterActive: boolean;
   applyFilter: (key: string) => void;
   resetFilters: () => void;
+  allDestinations: any[];
 }
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
@@ -18,7 +19,6 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [filteredDestinations, setFilteredDestinations] = useState<any[] | undefined>(undefined);
   const [isFilterActive, setIsFilterActive] = useState(false);
 
-  // Fetch all orgs (restaurants + CBOs) on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -44,7 +44,6 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
 
  
-
     if (key === "All") {
       setFilteredDestinations(allDestinations);
       return;
@@ -70,6 +69,7 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         isFilterActive,
         applyFilter,
         resetFilters,
+        allDestinations,
       }}
     >
       {children}
