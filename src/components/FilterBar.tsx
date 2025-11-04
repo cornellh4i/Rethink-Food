@@ -93,7 +93,7 @@ export default function FilterBar({}) {
                       onClick={() => {
                         setSelectedBorough(borough);
                         setIsBoroughDropdownOpen(false);
-                        handleFilterClick(borough);
+                        handleFilterClick(borough === "Boroughs" ? "All" : borough);
                       }}
                       className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors"
                     >
