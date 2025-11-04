@@ -64,9 +64,9 @@ export default function FilterBar({}) {
 
   return (
     <>
-      <div className="absolute top-10 left-4 z-10">
-        <div className="flex-col md gap-4">
-          <div className="flex gap-3 mb-4">
+      <div className="absolute top-10 left-4 z-10 ma]]]">
+        <div className="flex flex-wrap gap-4 items-start">
+         
             <div className="relative">
               <button
                 onClick={() => setIsBoroughDropdownOpen(!isBoroughDropdownOpen)}
@@ -136,24 +136,24 @@ export default function FilterBar({}) {
                 </div>
               )}
             </div>
-          </div>
 
-          <div className="flex gap-3">
-            {RestCBOData.map(({ value, label, icon, alt }) => (
-              <button
-                key={value}
-                onClick={() => handleFilterClick(value)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-full transition-all duration-200 ${
-                  activeFilter === value
-                    ? "bg-[#5A5A5A] text-white"
-                    : "bg-[#E3E3E3] text-black hover:bg-gray-300"
-                }`}
-              >
-                <img src={icon} alt={alt} className="w-5 h-5" />
-                <span>{label}</span>
-              </button>
-            ))}
-          </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              {RestCBOData.map(({ value, label, icon, alt }) => (
+                <button
+                  key={value}
+                  onClick={() => handleFilterClick(value)}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-full transition-all duration-200 ${
+                    activeFilter === value
+                      ? "bg-[#5A5A5A] text-white"
+                      : "bg-[#E3E3E3] text-black hover:bg-gray-300"
+                  }`}
+                >
+                  <img src={icon} alt={alt} className="w-5 h-5" />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
+         
         </div>
       </div>
     </>
