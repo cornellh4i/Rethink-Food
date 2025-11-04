@@ -47,7 +47,7 @@ export default function MetricBar({}){
       <>
         <div className="fixed top-0 left-0 right-0 gap-2 flex flex-row justify-evenly items-center bg-white mb-30 p-2 flex-wrap z-50">
           {(Object.keys(data) as Array<keyof MetricData>).map((key) => (
-            <div className="rounded-xl bg-[#D9D9D9] w-44 h-24 flex flex-col justify-center items-center">
+            <div key={key} className="rounded-xl bg-[#D9D9D9] w-44 h-24 flex flex-col justify-center items-center">
               <p className="font-bold text-3xl text-black">{data[key]}</p>
               <p className="text-sm text-black">{key}</p>
             </div>
