@@ -4,7 +4,8 @@
 import { useFilter } from '@/context/FilterContext';
 import { useState } from 'react';
 
-const BOROUGHS = ['All', 'Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island'];
+const TITLES = ['Neighborhood', 'Boroughs'];
+const RestOrCBO = ["Resturant", "CBOS"];
 
 
 export default function FilterBar({}){
@@ -16,26 +17,46 @@ export default function FilterBar({}){
           applyFilter(borough);
     }
 
+ 
+
     
 
     return (
       <>
         {/* Filter buttons overlaid on the map */}
-        <div className="absolute top-4 left-4 z-10">
-          <div className="flex gap-2 overflow-x-auto">
-            {BOROUGHS.map((borough) => (
-              <button
-                key={borough}
-                onClick={() => setFilter(borough)}
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 whitespace-nowrap shadow-sm ${
-                  activeBorough === borough 
-                    ? "bg-green-400 text-white shadow-md" 
-                    : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
-                }`}
-              >
-                {borough}
-              </button>
-            ))}
+        <div className="absolute top-50 md:top-26 left-4 z-10">
+          <div className="flex gap-4 overflow-x-auto">
+            <div className="flex gap-1">
+              {TITLES.map((title) => (
+                <button
+                  key={title}
+                  onClick={() => setFilter(title)}
+                  className={`px-3 py-1 text-sm font-medium rounded-full transition-all duration-200 whitespace-nowrap shadow-sm ${
+                    activeBorough === title
+                      ? "bg-[#5A5A5A] text-white shadow-md"
+                      : "bg-[#E3E3E3] text-black hover:bg-gray-100 border border-gray-300"
+                  }`}
+                >
+                  {title}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex gap-1">
+              {RestOrCBO.map((title) => (
+                <button
+                  key={title}
+                  onClick={() => setFilter(title)}
+                  className={`px-3 py-1 text-sm font-medium rounded-full transition-all duration-200 whitespace-nowrap shadow-sm ${
+                    activeBorough === title
+                      ? "bg-[#5A5A5A] text-white shadow-md"
+                      : "bg-[#E3E3E3] text-black hover:bg-gray-100 border border-gray-300"
+                  }`}
+                >
+                  {title}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </>
