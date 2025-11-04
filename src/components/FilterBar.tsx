@@ -64,8 +64,8 @@ export default function FilterBar({}) {
 
   return (
     <>
-      <div className="absolute top-10 left-4 z-10 ma]]]">
-        <div className="flex flex-wrap gap-4 items-start">
+      <div className="absolute top-10 left-4 z-10">
+        <div className="flex flex-wrap gap-4">
          
             <div className="relative">
               <button
