@@ -3,7 +3,7 @@ import { Organization } from "@/app/page";
 
 export default function RestaurantDetailPopup({ restaurant }: { restaurant: Organization }) {
   return (
-    <div className="p-8 w-[350px]">
+    <div className="p-2.5 w-[300px]">
       <div className="h-32 bg-gray-300 mb-4 rounded-lg" />
       <h2 className="text-lg text-black font-semibold">{restaurant.name}</h2>
       <p className="text-xs text-black">Meal Maker Resturant · {restaurant.borough}</p>

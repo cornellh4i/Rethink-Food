@@ -39,7 +39,7 @@ export default function OrganizationDetailPopup({
       {/* actual popup, stays in normal layout position */}
       <div
         ref={popupRef}
-        className="bg-white rounded-xl shadow-xl border border-gray-200 p-4 relative max-h-[80vh] overflow-y-auto w-[400px] z-50"
+        className="bg-white rounded-xl shadow-xl border border-gray-200 p-4 relative max-h-[80vh] overflow-y-auto w-[340px] z-50"
       >
         <button
           onClick={onClose}

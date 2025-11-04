@@ -6,7 +6,7 @@ export default function CBODetailPopup({ cbo }: { cbo: Organization }) {
   const [activeTab, setActiveTab] = useState("overview");
 
   return (
-    <div className="p-8 w-[350px]">
+    <div className="p-2.5 w-[300px]">
    
       <div className="h-32 bg-gray-300 mb-4 rounded-lg" />
 
@@ -63,13 +63,13 @@ export default function CBODetailPopup({ cbo }: { cbo: Organization }) {
       </div>
 
     
-      <div className="mt-4 text-sm text-gray-700 leading-relaxed">
+      <div className="mt-4 text-xs text-gray-700 leading-relaxed">
         {activeTab === "overview" && <p>Service overview dummy text.</p>}
         {activeTab === "demographics" && (
             <div className="space-y-2">
-                <p className = "font-medium text-lg text-gray-800" > Age</p>
-                <p className = "font-medium text-lg text-gray-800" >Poverty Line</p>
-                <p className = "font-medium text-lg text-gray-800" > Race</p>
+                <p className = "font-medium text-xs text-gray-800" > Age</p>
+                <p className = "font-medium text-xs text-gray-800" >Poverty Line</p>
+                <p className = "font-medium text-xs text-gray-800" > Race</p>
             </div>
             )}
         {activeTab === "about" && <p>About this CBO dummy text</p>}
