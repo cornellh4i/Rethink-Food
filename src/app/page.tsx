@@ -60,7 +60,7 @@ function HomeContent() {
     <div className="flex flex-col h-screen">
       <MetricBar />
 
-      <div className="flex flex-1 overflow-hidden mt-[32px] relative">
+      <div className="flex flex-1 overflow-hidden mt-[210px]  md:mt-[110px] relative">
         {isFilterActive && (
           <div className="w-2/5 border-r border-gray-300 overflow-y-auto bg-gray-50 z-20">
             <div className="p-4">
@@ -74,9 +74,7 @@ function HomeContent() {
         )}
 
         <div className={isFilterActive ? "w-3/5 relative" : "w-full relative"}>
-          <Map
-            selectedOrg={selectedOrg}
-          />
+          <Map selectedOrg={selectedOrg} />
           <FilterBar />
 
           {selectedOrg && (
