@@ -62,7 +62,7 @@ function HomeContent() {
 
       <div className="flex flex-1 overflow-hidden mt-[32px] relative">
         {isFilterActive && (
-          <div className="w-2/5 border-r border-gray-300 overflow-y-auto bg-gray-50 z-20">
+          <div className="w-1/4 border-r border-gray-300 overflow-y-auto bg-gray-50 z-20">
             <div className="p-4">
               <OrgList
                 onOrganizationSelect={(org) => {
@@ -73,7 +73,7 @@ function HomeContent() {
           </div>
         )}
 
-        <div className={isFilterActive ? "w-3/5 relative" : "w-full relative"}>
+        <div className={isFilterActive ? "w-3/4 relative" : "w-full relative"}>
           <Map
             selectedOrg={selectedOrg}
           />
