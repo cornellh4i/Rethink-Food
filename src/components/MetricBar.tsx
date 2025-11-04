@@ -5,6 +5,13 @@ interface Organization {
     number_of_meals?: number;
 }
 
+interface MetricData {
+    "Total Restaurants": number;
+    "Total CBOS": number;
+    "Food from Restaurants": number;
+    "Food for CBO": number;
+}
+
 export default function MetricBar({}){
     const { filteredDestinations } = useFilter();
 
@@ -29,22 +36,24 @@ export default function MetricBar({}){
     .filter((org: Organization) => org.org_type === 'cbo')
     .reduce((sum: number, dest: Organization) => sum + (dest.number_of_meals || 0), 0);
 
+    const data: MetricData = {
+      "Total Restaurants": totalRestaurants,
+      "Total CBOS": totalCBO,
+      "Food from Restaurants": foodFromRestaurants,
+      "Food for CBO": foodForCBO
+    }
+
     return (
-        <>
-            <div className = "fixed top-0 left-0 right-0 flex gap-2 justify-around text-white bg-green-400 mb-30 p-1" >
-                <p>Total Restaurants: {totalRestaurants}</p>
-
-                <p>Total CBOs: {totalCBO} </p>
-
-                <p>Food From Restaurants: {foodFromRestaurants}</p>
-
-                <p>Food to CBOs: {foodForCBO}</p>
-
-                
+      <>
+        <div className="fixed top-0 left-0 right-0 gap-2 flex flex-row justify-evenly items-center bg-white mb-30 p-2 flex-wrap z-50">
+          {(Object.keys(data) as Array<keyof MetricData>).map((key) => (
+            <div className="rounded-xl bg-[#D9D9D9] w-44 h-24 flex flex-col justify-center items-center">
+              <p className="font-bold text-3xl text-black">{data[key]}</p>
+              <p className="text-sm text-black">{key}</p>
             </div>
-
-        </>
-
-    )
+          ))}
+        </div>
+      </>
+    );
         
 }
