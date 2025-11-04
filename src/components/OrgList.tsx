@@ -34,55 +34,32 @@ export default function OrgList({
       {filteredDestinations.map((org: Organization) => (
         <button
           key={org.id}
-          className="w-full text-left bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+          className="w-full text-left rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+          style={{ backgroundColor: '#F5F5F5' }}
           onClick={() => onOrganizationSelect(org)}
         >
-          <h3 className="text-base text-gray-800 font-semibold mb-1">
+          <h3 className="text-black mb-1" style={{fontWeight: 600, fontSize: '18px', lineHeight: '140%' }}>
             {org.name}
           </h3>
 
-          <div className="flex gap-2 mb-2 text-xs text-gray-700 flex-wrap">
-            {org.org_type && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded">
-                <span className="block w-2 h-2 rounded-full"
-                  style={{
-                    backgroundColor:
-                      org.org_type === "restaurant" ? "#1e453e" : "#00D100",
-                  }}
-                />
-                <span>{org.org_type}</span>
-              </span>
-            )}
+          <p className="text-sm text-black mb-3">
+            {org.org_type} · {org.borough}
+          </p>
 
-            {org.borough && (
-              <span className="px-2 py-1 bg-gray-100 rounded">
-                {org.borough}
-              </span>
-            )}
-
-            {org.area && (
-              <span className="px-2 py-1 bg-gray-100 rounded">
-                {org.area}
-              </span>
-            )}
+          <div className="flex gap-2 flex-wrap">
+            <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
+              100+ meals weekly
+            </span>
+            <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
+              Halal
+            </span>
+            <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
+              Afghan
+            </span>
+            <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
+              Hot Food
+            </span>
           </div>
-
-          <div className="text-gray-600 text-xs leading-relaxed">
-            {org.street_address && (
-              <p>{org.street_address}</p>
-            )}
-            {(org.city || org.state || org.zip) && (
-              <p>
-                {org.city}, {org.state} {org.zip}
-              </p>
-            )}
-          </div>
-
-          {org.website && (
-            <p className="text-green-600 text-xs font-medium mt-2 underline">
-              Visit website →
-            </p>
-          )}
         </button>
       ))}
     </div>
