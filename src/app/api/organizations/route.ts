@@ -254,8 +254,7 @@ export async function GET(request: NextRequest) {
     const { data: items, error } = await supabase
       .from('organizations')
       .select('*')
-      .in('org_type', ['restaurant', 'cbo'])
-      .order('updated_at', { ascending: false });
+      .in('org_type', ['restaurant', 'cbo']);
 
     if (error) {
       console.error('Error fetching items:', error.message);
