@@ -19,6 +19,10 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [filteredDestinations, setFilteredDestinations] = useState<any[] | undefined>(undefined);
   const [isFilterActive, setIsFilterActive] = useState(false);
 
+  const [selectedBorough, setSelectedBorough] = useState<string | null>(null);
+  const [selectedType, setSelectedType] = useState<"Restaurant" | "CBO" | null>(null);
+  
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -35,25 +39,57 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, []);
 
   const applyFilter = (key: string) => {
-    setFilters((prev) => ({ ...prev, [key]: !prev[key] }));
     setIsFilterActive(true);
 
-    if (!Array.isArray(allDestinations)) {
-      console.warn("allDestinations is not an array yet");
+    // Handle selecting borough
+    if (["Bronx", "Brooklyn", "Manhattan", "Queens", "Staten Island"].includes(key)) {
+      const newBorough = selectedBorough === key ? null : key;
+      setSelectedBorough(newBorough);
+      filterData(newBorough, selectedType);
       return;
     }
 
- 
-    if (key === "All") {
-      setFilteredDestinations(allDestinations);
+    // Handle selecting restaurants/CBOs
+    if (key === "Resturant" || key === "CBOS") {
+      // only one can be active
+      const newType =
+        selectedType === (key === "Resturant" ? "Restaurant" : "CBO") ? null : key === "Resturant" ? "Restaurant" : "CBO";
+      setSelectedType(newType);
+      filterData(selectedBorough, newType);
       return;
     }
 
-    const filtered = allDestinations.filter((dest) => dest.borough === key);
+    // Reset to all
+    if (key === "All" || key === "Boroughs") {
+      resetFilters();
+      return;
+    }
+  };
+
+  const filterData = (borough: string | null, type: "Restaurant" | "CBO" | null) => {
+    if (!Array.isArray(allDestinations)) return;
+
+    let filtered = [...allDestinations];
+
+    if (borough) {
+      filtered = filtered.filter((dest) => dest.borough === borough);
+    }
+
+    if (type) {
+      filtered = filtered.filter((dest) => {
+        const orgType = dest.org_type?.toLowerCase();
+        if (type === "Restaurant") return orgType === "restaurant";
+        if (type === "CBO") return orgType === "cbo";
+        return true;
+      });
+    }
+
     setFilteredDestinations(filtered);
   };
 
   const resetFilters = () => {
+    setSelectedBorough(null);
+    setSelectedType(null);
     setFilters({});
     setFilteredDestinations(allDestinations);
     setIsFilterActive(false);
