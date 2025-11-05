@@ -6,6 +6,10 @@ import { Organization } from "@/app/page";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
+const DEFAULT_CENTER: [number, number] = [-73.9836, 40.7469];
+const DEFAULT_ZOOM = 14;
+
+
 
 function createPngMarkerElement(orgType?: string): Promise<HTMLElement> {
   return new Promise((resolve) => {
@@ -160,13 +164,23 @@ export default function Map({
     if (!map.current) return; map.current.zoomOut();
   };
 
+  const handleResize = () => {
+    if (!map.current) return;
+    map.current.resize();
+    map.current.flyTo({
+      center: DEFAULT_CENTER,
+      zoom: DEFAULT_ZOOM,
+      essential: true,
+    });
+  };
+
   return (
     <div className="w-full h-full relative">
       <div ref={mapContainer} className="w-full h-full" />
 
       <div className="absolute bottom-4 right-4 z-20 flex flex-col items-end gap-2">
-        <button
-          onClick={() => map.current?.resize()}
+      <button
+          onClick={handleResize}
           className="w-10 h-10 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center hover:bg-gray-100"
           aria-label="Resize map"
           title="Resize map"

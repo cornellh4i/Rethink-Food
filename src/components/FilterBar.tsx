@@ -38,23 +38,29 @@ const NEIGHBORHOODS = [
 
 export default function FilterBar({}) {
   const { applyFilter } = useFilter();
-  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [activeTypeFilter, setActiveTypeFilter] = useState<string | null>(null);
   const [isBoroughDropdownOpen, setIsBoroughDropdownOpen] = useState(false);
   const [isNeighborhoodDropdownOpen, setIsNeighborhoodDropdownOpen] =
     useState(false);
   const [selectedBorough, setSelectedBorough] = useState("Boroughs");
 
-  const handleFilterClick = (filterValue: string) => {
-    if (activeFilter === filterValue) {
-      setActiveFilter(null);
+  const handleTypeFilterClick = (filterValue: string) => {
+    if (activeTypeFilter === filterValue) {
+      setActiveTypeFilter(null);
+      applyFilter(filterValue); // This will toggle it off
+    } else {
+      setActiveTypeFilter(filterValue);
+      applyFilter(filterValue);
+    }
+  };
+
+  const handleBoroughSelect = (borough: string) => {
+    setSelectedBorough(borough);
+    setIsBoroughDropdownOpen(false);
+    if (borough === "Boroughs") {
       applyFilter("All");
     } else {
-      setActiveFilter(filterValue);
-      applyFilter(filterValue);
-
-      if (!BOROUGHS.includes(filterValue)) {
-        setSelectedBorough("Boroughs");
-      }
+      applyFilter(borough);
     }
   };
 
@@ -90,11 +96,7 @@ export default function FilterBar({}) {
                   {BOROUGHS.map((borough) => (
                     <button
                       key={borough}
-                      onClick={() => {
-                        setSelectedBorough(borough);
-                        setIsBoroughDropdownOpen(false);
-                        handleFilterClick(borough === "Boroughs" ? "All" : borough);
-                      }}
+                      onClick={() => handleBoroughSelect(borough)}
                       className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors"
                     >
                       {borough}
@@ -141,9 +143,9 @@ export default function FilterBar({}) {
               {RestCBOData.map(({ value, label, icon, alt }) => (
                 <button
                   key={value}
-                  onClick={() => handleFilterClick(value)}
+                  onClick={() => handleTypeFilterClick(value)}
                   className={`flex items-center gap-2 px-6 py-3 rounded-full transition-all duration-200 ${
-                    activeFilter === value
+                    activeTypeFilter === value
                       ? "bg-[#5A5A5A] text-white"
                       : "bg-[#E3E3E3] text-black hover:bg-gray-300"
                   }`}
