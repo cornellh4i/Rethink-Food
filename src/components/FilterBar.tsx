@@ -20,7 +20,7 @@ const RestCBOData = [
   },
 ];
 const BOROUGHS = [
-  "Boroughs",
+  "All Boroughs",
   "Bronx",
   "Brooklyn",
   "Manhattan",
