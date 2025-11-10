@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
     const supabase = createServerSupabaseClient();
 
     const { data: restaurants, error } = await supabase
-      .from("organizations")
+      .from("restaurants")
       .select()
 
     if (error) {
