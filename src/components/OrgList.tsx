@@ -18,7 +18,7 @@ export default function OrgList({
     }
   }, [filteredDestinations]);
 
-  const getDummyProgress = () => 60 + Math.random() * 10;
+  const getDummyProgress = () => 60;
 
   const parseCBOCuisinePreferences = (cuisinePreference?: string): string[] => {
     if (!cuisinePreference) return [];

@@ -9,7 +9,7 @@ export default function CBODetailPopup({ cbo }: { cbo: Organization }) {
     ? cbo.cuisine_preference.split(';').map(c => c.trim()).filter(c => c.length > 0)
     : [];
 
-  const progressPercentage = 60 + Math.random() * 10;
+  const progressPercentage = 60;
 
   const formatBudget = (amount?: number) => {
     if (!amount) return '';
