@@ -87,7 +87,7 @@ export default function OrgList({
               </h3>
 
               <p className="text-sm text-black mb-3">
-                {restaurantData?.restaurant_type || "Restaurant"} ·{" "}
+                {restaurantData?.restaurant_type + " Restaurant"|| "Restaurant"} ·{" "}
                 {org.borough}
               </p>
 

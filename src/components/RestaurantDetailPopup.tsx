@@ -33,7 +33,7 @@ export default function RestaurantDetailPopup({ restaurant }: { restaurant: Orga
 
       <div>
       <h2 className="text-2xl text-black font-bold mb-1">{restaurant.name}</h2>
-      <p className="text-sm text-gray-600">{restaurantData?.restaurant_type || "Restaurant"} · {restaurant.borough}</p>
+      <p className="text-sm text-gray-600">{restaurantData?.restaurant_type + " Restaurant" || "Restaurant"} · {restaurant.borough}</p>
       <p className="text-sm text-gray-600">{restaurant.street_address}, {restaurant.state}, {restaurant.zip} </p>
 
         <div className="flex flex-wrap gap-2 mt-2">
