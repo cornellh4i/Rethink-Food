@@ -185,12 +185,26 @@ export default function Map({
           aria-label="Resize map"
           title="Resize map"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-700">
-            <polyline points="15 3 21 3 21 9" />
-            <polyline points="9 21 3 21 3 15" />
-            <line x1="21" y1="3" x2="14" y2="10" />
-            <line x1="3" y1="21" x2="10" y2="14" />
+          <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          width="48"
+          height="48"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="square"
+          strokeLinejoin="miter"
+          className="text-gray-700"
+        >
+            
+            <polyline points="12 6 10 8 12 6 14 8 12 6" />
+            <polyline points="18 12 16 10 18 12 16 14 18 12" />
+            <polyline points="12 18 10 16 12 18 14 16 12 18" />
+            <polyline points="6 12 8 10 6 12 8 14 6 12" />
+
           </svg>
+
         </button>
 
         <div className="flex flex-col bg-white border border-gray-300 rounded-lg shadow-md overflow-hidden">
