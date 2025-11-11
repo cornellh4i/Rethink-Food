@@ -9,6 +9,7 @@ interface FilterContextType {
   applyFilter: (key: string) => void;
   resetFilters: () => void;
   allDestinations: any[];
+  setIsFilterActive: (value: boolean) => void;
 }
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
@@ -104,6 +105,7 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setFilteredDestinations,
         isFilterActive,
         applyFilter,
+        setIsFilterActive,
         resetFilters,
         allDestinations,
       }}

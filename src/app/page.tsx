@@ -26,7 +26,7 @@ export type Organization = {
 };
 
 function HomeContent() {
-  const { isFilterActive } = useFilter();
+  const { isFilterActive, setIsFilterActive} = useFilter();
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
 
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -63,15 +63,39 @@ function HomeContent() {
       <div className="flex flex-1 overflow-hidden mt-[210px]  md:mt-[110px] relative">
         {isFilterActive && (
           <div className="w-1/4 border-r border-gray-300 overflow-y-auto bg-gray-50 z-20">
-            <div className="p-4">
-              <OrgList
-                onOrganizationSelect={(org) => {
-                  setSelectedOrg(org);
-                }}
-              />
-            </div>
-          </div>
-        )}
+    
+    <div className="flex items-center justify-between p-4 border-b bg-white">
+      <div className="flex items-center bg-gray-100 rounded-full px-3 py-2 w-full max-w-[400px]">
+        <input
+          type="text"
+          placeholder="Search"
+          className="bg-transparent outline-none text-sm text-gray-700 placeholder-gray-500 w-full"
+          disabled
+        />
+      </div>
+      
+      <button
+        onClick={() => setIsFilterActive(false)}
+        className="hover:opacity-80 transition-opacity"
+        title="Close Sidebar"
+      >
+        <img
+          src="/close_sidebar_icon.png"
+          alt="Close Sidebar"
+          className="w-10 h-8"
+        />
+      </button>
+    </div>
+
+        <div className="p-4">
+           <OrgList
+           onOrganizationSelect={(org) => {
+            setSelectedOrg(org);
+        }}
+      />
+    </div>
+  </div>
+)}
 
         <div className={isFilterActive ? "w-3/5 relative" : "w-full relative"}>
           <Map selectedOrg={selectedOrg} />

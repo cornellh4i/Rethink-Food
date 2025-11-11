@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
 
+
 const RestCBOData = [
   {
     value: "Resturant",
@@ -37,7 +38,7 @@ const NEIGHBORHOODS = [
 ];
 
 export default function FilterBar({}) {
-  const { applyFilter } = useFilter();
+  const { applyFilter, resetFilters } = useFilter();
   const [activeTypeFilter, setActiveTypeFilter] = useState<string | null>(null);
   const [isBoroughDropdownOpen, setIsBoroughDropdownOpen] = useState(false);
   const [isNeighborhoodDropdownOpen, setIsNeighborhoodDropdownOpen] =
@@ -155,6 +156,15 @@ export default function FilterBar({}) {
                 </button>
               ))}
             </div>
+
+                <button
+                  onClick={() => {
+                    resetFilters();
+                  }}
+                  className="flex items-center gap-2 px-6 py-3 rounded-full bg-[#E3E3E3] text-black hover:bg-gray-300 transition-all duration-200"
+                >
+                  <span>Reset</span>
+                </button>
          
         </div>
       </div>
