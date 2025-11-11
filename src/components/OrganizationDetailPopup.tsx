@@ -3,7 +3,7 @@ import { Organization } from "@/app/page";
 import { X } from "lucide-react";
 import RestaurantDetailPopup from "./RestaurantDetailPopup";
 import CBODetailPopup from "./CBODetailPopup";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function OrganizationDetailPopup({
   org,
@@ -13,6 +13,25 @@ export default function OrganizationDetailPopup({
   onClose: () => void;
 }) {
   const popupRef = useRef<HTMLDivElement>(null);
+  const [cboData, setCboData] = useState<any>(null);
+  const [restaurantData, setRestaurantData] = useState<any>(null);
+
+  // Fetch CBO-specific data when org changes
+  useEffect(() => {
+    if (org.org_type === 'cbo') {
+      const fetchCBOData = async () => {
+        try {
+          const res = await fetch("/api/cbos");
+          const data = await res.json();
+          const cboInfo = data.cbos.find((c: any) => c.id === org.id);
+          setCboData(cboInfo || null);
+        } catch (e) {
+          console.error("Error fetching CBO data:", e);
+        }
+      };
+      fetchCBOData();
+    }
+  }, [org]);
 
   // Close when clicking outside
   useEffect(() => {
@@ -43,7 +62,7 @@ export default function OrganizationDetailPopup({
       >
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+          className="absolute top-3 right-3 bg-white rounded-full p-1 text-gray-600 hover:text-gray-800 shadow-sm z-10"
           aria-label="Close"
         >
           <X className="w-4 h-4" />
@@ -52,7 +71,7 @@ export default function OrganizationDetailPopup({
         {org.org_type === "restaurant" ? (
           <RestaurantDetailPopup restaurant={org} />
         ) : (
-          <CBODetailPopup cbo={org} />
+          <CBODetailPopup cbo={org} cboData={cboData} />
         )}
       </div>
     </>

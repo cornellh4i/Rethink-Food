@@ -21,8 +21,10 @@ export type Organization = {
   area?: string;
   website?: string | null;
   number_of_meals?: number;
+  meal_count?: number;
   created_at?: string;
   updated_at?: string;
+  writeup?: string;
 };
 
 function HomeContent() {
@@ -62,7 +64,7 @@ function HomeContent() {
 
       <div className="flex flex-1 overflow-hidden mt-[210px]  md:mt-[110px] relative">
         {isFilterActive && (
-          <div className="w-1/4 border-r border-gray-300 overflow-y-auto bg-gray-50 z-20">
+          <div className="w-1/4 min-w-[250px] border-r border-gray-300 overflow-y-auto bg-gray-50 z-20">
             <div className="p-4">
               <OrgList
                 onOrganizationSelect={(org) => {
@@ -73,7 +75,7 @@ function HomeContent() {
           </div>
         )}
 
-        <div className={isFilterActive ? "w-3/5 relative" : "w-full relative"}>
+        <div className="flex-1 relative min-w-0">
           <Map selectedOrg={selectedOrg} />
           <FilterBar />
 

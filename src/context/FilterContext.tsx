@@ -26,11 +26,47 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("/api/organizations");
-        const data = await res.json();
-        const orgs = data.organizations || [];
-        setAllDestinations(orgs);
-        setFilteredDestinations(orgs);
+        const [orgsRes, cbosRes] = await Promise.all([
+          fetch("/api/organizations"),
+          fetch("/api/cbos")
+        ]);
+
+        const orgsData = await orgsRes.json();
+        const cbosData = await cbosRes.json();
+
+        const organizations = orgsData.organizations || [];
+        const cbos = cbosData.cbos || [];
+
+        const cboDataMap: Record<string, any> = {};
+        cbos.forEach((cbo: any) => {
+          cboDataMap[cbo.id] = cbo;
+        });
+
+        const mergedOrganizations = organizations.map((org: any) => {
+          if (org.org_type === 'cbo' && cboDataMap[org.id]) {
+            const cboData = cboDataMap[org.id];
+            return {
+              ...org,
+              open_distribution: cboData.open_distribution,
+              volunteer_opportunities: cboData.volunteer_opportunities,
+              program_serving_minors: cboData.program_serving_minors,
+              cuisine_preference: cboData.cuisine_preference,
+              meal_format: cboData.meal_format,
+              annual_funding_goal: cboData.annual_funding_goal,
+              quarter_funding_goal: cboData.quarter_funding_goal,
+              meal_count: cboData.meal_count !== undefined && cboData.meal_count !== null 
+                ? cboData.meal_count 
+                : (org.number_of_meals !== undefined && org.number_of_meals !== null ? org.number_of_meals : undefined),
+              write_up: cboData.write_up && cboData.write_up.trim() 
+                ? cboData.write_up 
+                : (org.writeup && org.writeup.trim() ? org.writeup : undefined),
+            };
+          }
+          return org;
+        });
+
+        setAllDestinations(mergedOrganizations);
+        setFilteredDestinations(mergedOrganizations);
       } catch (err) {
         console.error("Error fetching organizations:", err);
       }

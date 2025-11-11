@@ -1,29 +1,65 @@
 'use client';
 import { Organization } from "@/app/page";
+import { useState, useEffect } from "react";
+
 
 export default function RestaurantDetailPopup({ restaurant }: { restaurant: Organization }) {
+  const [restaurantMap, setRestaurantMap] = useState<Record<any, any>>({});
+
+  useEffect(() => {
+    const fetchRestaurants = async () => {
+      try {
+        const res = await fetch("/api/restaurants");
+        const data = await res.json();
+
+        const obj = Object.fromEntries(
+          data.restaurants.map((r: any) => [r.id, r])
+        );
+        setRestaurantMap(obj);
+      } catch (e) {
+        console.error("Error fetching restaurants:", e);
+      }
+    };
+
+    fetchRestaurants();
+  }, []);
+
+  const restaurantData = restaurantMap[restaurant.id];
+
+
   return (
-    <div className="p-2.5 w-[300px]">
-      <div className="h-32 bg-gray-300 mb-4 rounded-lg" />
-      <h2 className="text-lg text-black font-semibold">{restaurant.name}</h2>
-      <p className="text-xs text-black">Meal Maker Resturant · {restaurant.borough}</p>
-      <p className="text-xs text-black">{restaurant.street_address}, {restaurant.state}, {restaurant.zip} </p>
-        
-        <div className="flex flex-wrap gap-2 mt-3">
-         {/* Placeholder tags */}
-        <span className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full">
-        Halal
-      </span>
-        <span className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full">
-        Afghan
-        </span>
-        <span className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full">
-        Hot food
-        </span>
+    <div className="w-full">
+      <div className="h-42 bg-gray-300 -m-4 mb-4" />
+
+      <div>
+      <h2 className="text-2xl text-black font-bold mb-1">{restaurant.name}</h2>
+      <p className="text-sm text-gray-600">{restaurantData?.restaurant_type + " Restaurant" || "Restaurant"} · {restaurant.borough}</p>
+      <p className="text-sm text-gray-600">{restaurant.street_address}, {restaurant.state}, {restaurant.zip} </p>
+
+        <div className="flex flex-wrap gap-2 mt-2">
+         {restaurant.number_of_meals != null &&
+          restaurant.number_of_meals > 0 &&
+          restaurant.number_of_meals >= 100 && (
+            <span className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full">
+              {restaurant.number_of_meals >= 1000
+                ? "1000+ meals served"
+                : restaurant.number_of_meals >= 500
+                ? "500+ meals served"
+                : "100+ meals served"}
+            </span>
+          )}
+         {restaurantData?.cuisine &&
+          restaurantData.cuisine
+            .split(",")
+            .map((cuisine: string, index: number) => (
+              <span key={index} className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full">
+                {cuisine.trim()}
+              </span>
+            ))}
         </div>
 
         <div className="mt-6">
-  <h2 className="text-lg text-black font-semibold mb-4">Support My Distribution Partners</h2>
+  <p className="text-sm text-black mb-4">Support My Distribution Partners</p>
 
   <div className="space-y-4 text-black">
     {[
@@ -33,7 +69,7 @@ export default function RestaurantDetailPopup({ restaurant }: { restaurant: Orga
     ].map((partner) => (
       <div
         key={partner.name}
-        className="border rounded-xl p-4 shadow-sm bg-white hover:shadow-md transition"
+        className="border rounded-xl p-3 shadow-sm bg-white hover:shadow-md transition"
       >
         {/* Partner Name */}
         <h3 className="text-base font-semibold mb-2">{partner.name}</h3>
@@ -41,12 +77,8 @@ export default function RestaurantDetailPopup({ restaurant }: { restaurant: Orga
         {/* Meals + Donation Info */}
         <div className="flex justify-between items-center mb-1">
           <div>
-            <p className="text-xl font-bold">{partner.meals}</p>
-            <p className="text-xs text-gray-500">meals needed / week</p>
-          </div>
-          <div className="text-right">
-            <p className="text-xl font-bold">${partner.needed}</p>
-            <p className="text-xs text-gray-500">still needed</p>
+            <p className="text-sm font-semibold">${partner.meals} needed this quater</p>
+            <p className="text-xs text-gray-600">500 meals needed / week</p>
           </div>
         </div>
 
@@ -58,17 +90,13 @@ export default function RestaurantDetailPopup({ restaurant }: { restaurant: Orga
           ></div>
         </div>
 
-        {/* About Button */}
-        <button className="text-sm font-semibold text-gray-700 hover:text-gray-800 flex items-center">
-          About {partner.name} →
-        </button>
+      
         </div>
         ))}
         </div>
         </div>
-
-      
+      </div>
     </div>
-    
+
   );
 }
