@@ -42,6 +42,7 @@ async function createMarker(
     .addTo(mapInstance);
   return marker;
 }
+
 async function geocodeAddress(address: string): Promise<[number, number] | null> {
   try {
     const enriched = `${address}, New York, NY`;
@@ -62,8 +63,10 @@ async function geocodeAddress(address: string): Promise<[number, number] | null>
 
 export default function Map({
   selectedOrg,
+  onOrganizationSelect,
 }: {
   selectedOrg: Organization | null;
+  onOrganizationSelect?: (org: Organization) => void;
 }) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -131,8 +134,32 @@ export default function Map({
           </div>
         `;
 
-        const m = await createMarker((org.org_type === 'restaurant' ? 'restaurant' : 'cbo'), coords as [number, number], map.current!);
-        m.setPopup(new mapboxgl.Popup().setHTML(popupHTML));
+        const popup = new mapboxgl.Popup({
+        closeButton: false,
+        closeOnClick: false,
+        anchor: 'bottom',
+        offset: 50
+      }).setHTML(popupHTML);
+
+      const m = await createMarker((org.org_type === 'restaurant' ? 'restaurant' : 'cbo'), coords as [number, number], map.current!);
+
+      const markerElement = m.getElement();
+
+      markerElement.style.cursor = 'pointer';
+
+      markerElement.addEventListener('mouseenter', () => {
+        popup.setLngLat(coords as [number, number]).addTo(map.current!);
+      });
+
+      markerElement.addEventListener('mouseleave', () => {
+        popup.remove();
+      });
+
+      markerElement.addEventListener('click', () => {
+        if (onOrganizationSelect) {
+          onOrganizationSelect(org);
+        }
+      });
 
         newMarkers.push(m);
       }
@@ -185,12 +212,12 @@ export default function Map({
           aria-label="Resize map"
           title="Resize map"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-700">
-            <polyline points="15 3 21 3 21 9" />
-            <polyline points="9 21 3 21 3 15" />
-            <line x1="21" y1="3" x2="14" y2="10" />
-            <line x1="3" y1="21" x2="10" y2="14" />
-          </svg>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-gray-700">
+          <polyline points="10 6 12 4 14 6" />
+          <polyline points="18 10 20 12 18 14" />
+          <polyline points="14 18 12 20 10 18" />
+          <polyline points="6 14 4 12 6 10" />
+        </svg>
         </button>
 
         <div className="flex flex-col bg-white border border-gray-300 rounded-lg shadow-md overflow-hidden">

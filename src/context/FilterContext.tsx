@@ -8,6 +8,7 @@ interface FilterContextType {
   isFilterActive: boolean;
   applyFilter: (key: string) => void;
   resetFilters: () => void;
+  closeSidebar: () => void;
   allDestinations: any[];
 }
 
@@ -21,6 +22,7 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const [selectedBorough, setSelectedBorough] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<"Restaurant" | "CBO" | null>(null);
+  const closeSidebar = () => { setIsFilterActive(false); };
   
 
   useEffect(() => {
@@ -96,8 +98,11 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
 
     // Reset to all
-    if (key === "All" || key === "Boroughs") {
-      resetFilters();
+    if (key === "All" || key === "Boroughs" || key === "All Boroughs") {
+      setSelectedBorough(null);
+      setSelectedType(null);
+      setFilters({});
+      setFilteredDestinations(allDestinations);
       return;
     }
   };
@@ -132,21 +137,22 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   return (
-    <FilterContext.Provider
-      value={{
-        filters,
-        setFilters,
-        filteredDestinations,
-        setFilteredDestinations,
-        isFilterActive,
-        applyFilter,
-        resetFilters,
-        allDestinations,
-      }}
-    >
-      {children}
-    </FilterContext.Provider>
-  );
+  <FilterContext.Provider
+    value={{
+      filters,
+      setFilters,
+      filteredDestinations,
+      setFilteredDestinations,
+      isFilterActive,
+      applyFilter,
+      resetFilters,
+      closeSidebar,
+      allDestinations,
+    }}
+  >
+    {children}
+  </FilterContext.Provider>
+);
 };
 
 export const useFilter = () => {
