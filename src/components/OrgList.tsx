@@ -178,14 +178,7 @@ export default function OrgList({
               </div>
             )}
 
-            {/* Restaurant chips - placeholder for now */}
-            {isRestaurant && (
-              <div className="flex gap-2 flex-wrap mt-2">
-                <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
-                  Restaurant
-                </span>
-              </div>
-            )}
+     
 
             {/* CBO Progress Bar (dummy, 60-70% fill) */}
             {isCBO && (
