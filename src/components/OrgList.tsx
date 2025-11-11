@@ -11,6 +11,7 @@ export default function OrgList({
   const { filteredDestinations } = useFilter();
   const [loading, setLoading] = useState(true);
   const [restaurantMap, setRestaurantMap] = useState<Record<any, any>>({});
+  const [cboMap, setCboMap] = useState<Record<any, any>>({});
 
   useEffect(() => {
     if (filteredDestinations !== undefined) {
@@ -24,6 +25,7 @@ export default function OrgList({
     if (!cuisinePreference) return [];
     return cuisinePreference.split(';').map(c => c.trim()).filter(c => c.length > 0);
   };
+
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
@@ -39,7 +41,22 @@ export default function OrgList({
       }
     };
 
+    const fetchCBOs = async () => {
+      try {
+        const res = await fetch("/api/cbos");
+        const data = await res.json();
+
+        const obj = Object.fromEntries(
+          data.cbos.map((c: any) => [c.id, c])
+        );
+        setCboMap(obj);
+      } catch (e) {
+        console.error("Error fetching CBOs:", e);
+      }
+    };
+
     fetchRestaurants();
+    fetchCBOs();
   }, []);
 
   if (loading) {
@@ -135,42 +152,43 @@ export default function OrgList({
             </h3>
 
           <p className="text-sm text-black mb-3">
-            {org.org_type === 'cbo' ? 'Community Based Organization' : org.org_type === 'restaurant' ? 'Restaurant' : org.org_type} · {org.borough}
+            Community Based Organization · {org.borough}
           </p>
 
             {/* Chips */}
             {isCBO && (
               <div className="flex gap-2 flex-wrap mt-2">
                 {/* Cuisine Preferences chips (semicolon-separated) */}
-                {parseCBOCuisinePreferences(org.cuisine_preference).map((cuisine, idx) => (
-                  <span key={`cuisine-pref-${idx}`} className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
-                    {cuisine}
-                  </span>
-                ))}
+                {cboMap[org.id]?.cuisine_preference && 
+                  parseCBOCuisinePreferences(cboMap[org.id].cuisine_preference).map((cuisine, idx) => (
+                    <span key={`cuisine-pref-${idx}`} className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
+                      {cuisine}
+                    </span>
+                  ))}
 
                 {/* Meal Format chip */}
-                {org.meal_format && (
+                {cboMap[org.id]?.meal_format && (
                   <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
-                    {org.meal_format}
+                    {cboMap[org.id].meal_format}
                   </span>
                 )}
 
                 {/* Serves Youth (0-18) - only if program_serving_minors or serves_minors is true */}
-                {(org.program_serving_minors === true || org.serves_minors === true) && (
+                {(cboMap[org.id]?.program_serving_minors === true || cboMap[org.id]?.serves_minors === true) && (
                   <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
                     Serves Youth (0–18)
                   </span>
                 )}
 
                 {/* Open Distribution - only if open_distribution is true */}
-                {org.open_distribution === true && (
+                {cboMap[org.id]?.open_distribution === true && (
                   <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
                     Open Distribution
                   </span>
                 )}
 
                 {/* Volunteer Opportunities - only if volunteer_opportunities is true */}
-                {org.volunteer_opportunities === true && (
+                {cboMap[org.id]?.volunteer_opportunities === true && (
                   <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
                     Volunteer Opportunities
                   </span>

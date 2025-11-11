@@ -2,11 +2,17 @@
 import { useState } from "react";
 import { Organization } from "@/app/page";
 
-export default function CBODetailPopup({ cbo }: { cbo: Organization }) {
+export default function CBODetailPopup({ 
+  cbo, 
+  cboData 
+}: { 
+  cbo: Organization;
+  cboData?: any;
+}) {
   const [activeTab, setActiveTab] = useState<"how-it-works" | "who-we-serve">("how-it-works");
 
-  const cuisinePreferences = cbo.cuisine_preference
-    ? cbo.cuisine_preference.split(';').map(c => c.trim()).filter(c => c.length > 0)
+  const cuisinePreferences: string[] = cboData?.cuisine_preference
+    ? cboData.cuisine_preference.split(';').map((c: string) => c.trim()).filter((c: string) => c.length > 0)
     : [];
 
   const progressPercentage = 60;
@@ -16,7 +22,7 @@ export default function CBODetailPopup({ cbo }: { cbo: Organization }) {
     return `$${amount.toLocaleString()}`;
   };
 
-  const servesMinors = cbo.program_serving_minors === true || cbo.serves_minors === true;
+  const servesMinors = cboData?.program_serving_minors === true || cboData?.serves_minors === true;
 
   return (
     <div className="w-full">
@@ -29,16 +35,16 @@ export default function CBODetailPopup({ cbo }: { cbo: Organization }) {
       {/* Chips */}
       <div className="flex flex-wrap gap-2 mt-3">
         {/* Cuisine Preferences chips */}
-        {cuisinePreferences.map((cuisine, index) => (
+        {cuisinePreferences.map((cuisine: string, index: number) => (
           <span key={`cuisine-${index}`} className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full">
             {cuisine}
           </span>
         ))}
 
         {/* Meal Format chip */}
-        {cbo.meal_format && (
+        {cboData?.meal_format && (
           <span className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full">
-            {cbo.meal_format}
+            {cboData.meal_format}
           </span>
         )}
 
@@ -50,14 +56,14 @@ export default function CBODetailPopup({ cbo }: { cbo: Organization }) {
         )}
 
         {/* Open Distribution - only if open_distribution is true */}
-        {cbo.open_distribution && (
+        {cboData?.open_distribution && (
           <span className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full">
             Open Distribution
           </span>
         )}
 
         {/* Volunteer Opportunities - only if volunteer_opportunities is true */}
-        {cbo.volunteer_opportunities && (
+        {cboData?.volunteer_opportunities && (
           <span className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full">
             Volunteer Opportunities
           </span>
@@ -85,9 +91,9 @@ export default function CBODetailPopup({ cbo }: { cbo: Organization }) {
         </div>
 
         {/* Annual Budget Goal */}
-        {cbo.annual_funding_goal && (
+        {cboData?.annual_funding_goal && (
           <p className="text-sm text-gray-500 mb-4">
-            Annual Budget Goal: {formatBudget(cbo.annual_funding_goal)}
+            Annual Budget Goal: {formatBudget(cboData.annual_funding_goal)}
           </p>
         )}
       </div>
@@ -138,7 +144,7 @@ export default function CBODetailPopup({ cbo }: { cbo: Organization }) {
               <div>
                 <h3 className="font-semibold text-sm text-black mb-2">Food served</h3>
                 <div className="flex flex-wrap gap-2">
-                  {cuisinePreferences.map((cuisine, index) => (
+                  {cuisinePreferences.map((cuisine: string, index: number) => (
                     <span key={`food-${index}`} className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full">
                       {cuisine}
                     </span>
@@ -150,7 +156,7 @@ export default function CBODetailPopup({ cbo }: { cbo: Organization }) {
             {/* Distribution */}
             <div>
               <h3 className="font-semibold text-sm text-black mb-2">Distribution</h3>
-              {cbo.open_distribution && (
+              {cboData?.open_distribution && (
                 <span className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full inline-block mb-2">
                   Open Distribution
                 </span>
@@ -181,7 +187,7 @@ export default function CBODetailPopup({ cbo }: { cbo: Organization }) {
 
         {activeTab === "who-we-serve" && (
           <div className="space-y-4">
-            <p className="text-xs italic text-gray-600">
+            <p className="text-xs text-gray-600">
               This data reflects everyone served by this organization, not only meal recipients.
             </p>
 

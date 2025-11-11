@@ -24,15 +24,6 @@ export type Organization = {
   meal_count?: number;
   created_at?: string;
   updated_at?: string;
-  
-  open_distribution?: boolean;
-  volunteer_opportunities?: boolean;
-  program_serving_minors?: boolean;
-  serves_minors?: boolean;
-  cuisine_preference?: string;
-  meal_format?: string;
-  annual_funding_goal?: number;
-  quarter_funding_goal?: number;
   writeup?: string;
 };
 
