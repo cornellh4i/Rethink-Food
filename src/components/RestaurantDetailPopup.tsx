@@ -1,29 +1,63 @@
 'use client';
 import { Organization } from "@/app/page";
+import { useState, useEffect } from "react";
+
 
 export default function RestaurantDetailPopup({ restaurant }: { restaurant: Organization }) {
+  const [restaurantMap, setRestaurantMap] = useState<Record<any, any>>({});
+
+  useEffect(() => {
+    const fetchRestaurants = async () => {
+      try {
+        const res = await fetch("/api/restaurants");
+        const data = await res.json();
+
+        const obj = Object.fromEntries(
+          data.restaurants.map((r: any) => [r.id, r])
+        );
+        setRestaurantMap(obj);
+      } catch (e) {
+        console.error("Error fetching restaurants:", e);
+      }
+    };
+
+    fetchRestaurants();
+  }, []);
+
+  const restaurantData = restaurantMap[restaurant.id];
+
+
   return (
     <div className="p-2.5 w-[300px]">
       <div className="h-32 bg-gray-300 mb-4 rounded-lg" />
       <h2 className="text-lg text-black font-semibold">{restaurant.name}</h2>
-      <p className="text-xs text-black">Meal Maker Resturant · {restaurant.borough}</p>
+      <p className="text-xs text-black">{restaurantData?.restaurant_type || "Restaurant"} · {restaurant.borough}</p>
       <p className="text-xs text-black">{restaurant.street_address}, {restaurant.state}, {restaurant.zip} </p>
-        
+
         <div className="flex flex-wrap gap-2 mt-3">
-         {/* Placeholder tags */}
-        <span className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full">
-        Halal
-      </span>
-        <span className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full">
-        Afghan
-        </span>
-        <span className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full">
-        Hot food
-        </span>
+         {restaurant.number_of_meals != null &&
+          restaurant.number_of_meals > 0 &&
+          restaurant.number_of_meals >= 100 && (
+            <span className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full">
+              {restaurant.number_of_meals >= 1000
+                ? "1000+ meals served"
+                : restaurant.number_of_meals >= 500
+                ? "500+ meals served"
+                : "100+ meals served"}
+            </span>
+          )}
+         {restaurantData?.cuisine &&
+          restaurantData.cuisine
+            .split(",")
+            .map((cuisine: string, index: number) => (
+              <span key={index} className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full">
+                {cuisine.trim()}
+              </span>
+            ))}
         </div>
 
         <div className="mt-6">
-  <h2 className="text-lg text-black font-semibold mb-4">Support My Distribution Partners</h2>
+  <p className="text-sm text-black mb-4">Support My Distribution Partners</p>
 
   <div className="space-y-4 text-black">
     {[

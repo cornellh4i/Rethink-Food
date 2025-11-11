@@ -1,7 +1,7 @@
-'use client'
-import React, { useState, useEffect } from 'react';
-import { useFilter } from '@/context/FilterContext';
-import { Organization } from '@/app/page';
+"use client";
+import React, { useState, useEffect } from "react";
+import { useFilter } from "@/context/FilterContext";
+import { Organization } from "@/app/page";
 
 export default function OrgList({
   onOrganizationSelect,
@@ -10,6 +10,7 @@ export default function OrgList({
 }) {
   const { filteredDestinations } = useFilter();
   const [loading, setLoading] = useState(true);
+  const [restaurantMap, setRestaurantMap] = useState<Record<any, any>>({});
 
   useEffect(() => {
     if (filteredDestinations !== undefined) {
@@ -23,12 +24,34 @@ export default function OrgList({
     if (!cuisinePreference) return [];
     return cuisinePreference.split(';').map(c => c.trim()).filter(c => c.length > 0);
   };
+  useEffect(() => {
+    const fetchRestaurants = async () => {
+      try {
+        const res = await fetch("/api/restaurants");
+        const data = await res.json();
+
+        const obj = Object.fromEntries(
+          data.restaurants.map((r: any) => [r.id, r])
+        );
+        setRestaurantMap(obj);
+      } catch (e) {
+        console.error("Error fetching restaurants:", e);
+      }
+    };
+
+    fetchRestaurants();
+  }, []);
 
   if (loading) {
-    return <p className="text-gray-500 text-sm px-2">Loading organizations...</p>;
+    return (
+      <p className="text-gray-500 text-sm px-2">Loading organizations...</p>
+    );
   }
 
-  if (!Array.isArray(filteredDestinations) || filteredDestinations.length === 0) {
+  if (
+    !Array.isArray(filteredDestinations) ||
+    filteredDestinations.length === 0
+  ) {
     return (
       <p className="text-gray-500 text-center py-4 text-sm">
         No organizations found
@@ -41,6 +64,64 @@ export default function OrgList({
       {filteredDestinations.map((org: Organization) => {
         const isCBO = org.org_type === 'cbo';
         const isRestaurant = org.org_type === 'restaurant';
+
+        if (org.org_type === "restaurant") {
+          const restaurantData = restaurantMap[org.id];
+
+          return (
+            <button
+              key={org.id}
+              className="w-full text-left rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+              style={{ backgroundColor: "#F5F5F5" }}
+              onClick={() => onOrganizationSelect(org)}
+            >
+              <h3
+                className="text-black mb-1"
+                style={{
+                  fontWeight: 600,
+                  fontSize: "18px",
+                  lineHeight: "140%",
+                }}
+              >
+                {org.name}
+              </h3>
+
+              <p className="text-sm text-black mb-3">
+                {restaurantData?.restaurant_type || "Restaurant"} ·{" "}
+                {org.borough}
+              </p>
+
+              <div className="flex gap-2 flex-wrap">
+                {org.number_of_meals != null &&
+                  org.number_of_meals > 0 &&
+                  org.number_of_meals >= 100 && (
+                    <span
+                      className="px-3 py-1 rounded-full text-xs text-black"
+                      style={{ backgroundColor: "#E6E6E6" }}
+                    >
+                      {org.number_of_meals >= 1000
+                        ? "1000+ meals served"
+                        : org.number_of_meals >= 500
+                        ? "500+ meals served"
+                        : "100+ meals served"}
+                    </span>
+                  )}
+                {restaurantData?.cuisine &&
+                  restaurantData.cuisine
+                    .split(",")
+                    .map((cuisine: string, index: number) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 rounded-full text-xs text-black"
+                        style={{ backgroundColor: "#E6E6E6" }}
+                      >
+                        {cuisine.trim()}
+                      </span>
+                    ))}
+              </div>
+            </button>
+          );
+        }
 
         return (
           <button
@@ -119,6 +200,8 @@ export default function OrgList({
             )}
           </button>
         );
+
+     
       })}
     </div>
   );
