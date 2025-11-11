@@ -43,7 +43,7 @@ export default function OrganizationDetailPopup({
       >
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+          className="absolute top-3 right-3 bg-white rounded-full p-1 text-gray-600 hover:text-gray-800 shadow-sm z-10"
           aria-label="Close"
         >
           <X className="w-4 h-4" />

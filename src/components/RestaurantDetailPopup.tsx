@@ -28,13 +28,15 @@ export default function RestaurantDetailPopup({ restaurant }: { restaurant: Orga
 
 
   return (
-    <div className="p-2.5 w-[300px]">
-      <div className="h-32 bg-gray-300 mb-4 rounded-lg" />
-      <h2 className="text-lg text-black font-semibold">{restaurant.name}</h2>
-      <p className="text-xs text-black">{restaurantData?.restaurant_type || "Restaurant"} · {restaurant.borough}</p>
-      <p className="text-xs text-black">{restaurant.street_address}, {restaurant.state}, {restaurant.zip} </p>
+    <div className="w-full">
+      <div className="h-42 bg-gray-300 -m-4 mb-4" />
 
-        <div className="flex flex-wrap gap-2 mt-3">
+      <div>
+      <h2 className="text-2xl text-black font-bold mb-1">{restaurant.name}</h2>
+      <p className="text-sm text-gray-600">{restaurantData?.restaurant_type || "Restaurant"} · {restaurant.borough}</p>
+      <p className="text-sm text-gray-600">{restaurant.street_address}, {restaurant.state}, {restaurant.zip} </p>
+
+        <div className="flex flex-wrap gap-2 mt-2">
          {restaurant.number_of_meals != null &&
           restaurant.number_of_meals > 0 &&
           restaurant.number_of_meals >= 100 && (
@@ -67,7 +69,7 @@ export default function RestaurantDetailPopup({ restaurant }: { restaurant: Orga
     ].map((partner) => (
       <div
         key={partner.name}
-        className="border rounded-xl p-4 shadow-sm bg-white hover:shadow-md transition"
+        className="border rounded-xl p-3 shadow-sm bg-white hover:shadow-md transition"
       >
         {/* Partner Name */}
         <h3 className="text-base font-semibold mb-2">{partner.name}</h3>
@@ -75,12 +77,8 @@ export default function RestaurantDetailPopup({ restaurant }: { restaurant: Orga
         {/* Meals + Donation Info */}
         <div className="flex justify-between items-center mb-1">
           <div>
-            <p className="text-xl font-bold">{partner.meals}</p>
-            <p className="text-xs text-gray-500">meals needed / week</p>
-          </div>
-          <div className="text-right">
-            <p className="text-xl font-bold">${partner.needed}</p>
-            <p className="text-xs text-gray-500">still needed</p>
+            <p className="text-sm font-semibold">${partner.meals} needed this quater</p>
+            <p className="text-xs text-gray-600">500 meals needed / week</p>
           </div>
         </div>
 
@@ -92,17 +90,13 @@ export default function RestaurantDetailPopup({ restaurant }: { restaurant: Orga
           ></div>
         </div>
 
-        {/* About Button */}
-        <button className="text-sm font-semibold text-gray-700 hover:text-gray-800 flex items-center">
-          About {partner.name} →
-        </button>
+      
         </div>
         ))}
         </div>
         </div>
-
-      
+      </div>
     </div>
-    
+
   );
 }
