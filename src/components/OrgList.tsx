@@ -17,6 +17,13 @@ export default function OrgList({
     }
   }, [filteredDestinations]);
 
+  const getDummyProgress = () => 60 + Math.random() * 10;
+
+  const parseCBOCuisinePreferences = (cuisinePreference?: string): string[] => {
+    if (!cuisinePreference) return [];
+    return cuisinePreference.split(';').map(c => c.trim()).filter(c => c.length > 0);
+  };
+
   if (loading) {
     return <p className="text-gray-500 text-sm px-2">Loading organizations...</p>;
   }
@@ -31,37 +38,88 @@ export default function OrgList({
 
   return (
     <div className="space-y-3 max-h-full overflow-y-auto pr-2">
-      {filteredDestinations.map((org: Organization) => (
-        <button
-          key={org.id}
-          className="w-full text-left rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-          style={{ backgroundColor: '#F5F5F5' }}
-          onClick={() => onOrganizationSelect(org)}
-        >
-          <h3 className="text-black mb-1" style={{fontWeight: 600, fontSize: '18px', lineHeight: '140%' }}>
-            {org.name}
-          </h3>
+      {filteredDestinations.map((org: Organization) => {
+        const isCBO = org.org_type === 'cbo';
+        const isRestaurant = org.org_type === 'restaurant';
+
+        return (
+          <button
+            key={org.id}
+            className="w-full text-left rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+            style={{ backgroundColor: '#F5F5F5' }}
+            onClick={() => onOrganizationSelect(org)}
+          >
+            <h3 className="text-black mb-1" style={{fontWeight: 600, fontSize: '18px', lineHeight: '140%' }}>
+              {org.name}
+            </h3>
 
           <p className="text-sm text-black mb-3">
-            {org.org_type} · {org.borough}
+            {org.org_type === 'cbo' ? 'Community Based Organization' : org.org_type === 'restaurant' ? 'Restaurant' : org.org_type} · {org.borough}
           </p>
 
-          <div className="flex gap-2 flex-wrap">
-            <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
-              100+ meals weekly
-            </span>
-            <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
-              Halal
-            </span>
-            <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
-              Afghan
-            </span>
-            <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
-              Hot Food
-            </span>
-          </div>
-        </button>
-      ))}
+            {/* Chips */}
+            {isCBO && (
+              <div className="flex gap-2 flex-wrap mt-2">
+                {/* Cuisine Preferences chips (semicolon-separated) */}
+                {parseCBOCuisinePreferences(org.cuisine_preference).map((cuisine, idx) => (
+                  <span key={`cuisine-pref-${idx}`} className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
+                    {cuisine}
+                  </span>
+                ))}
+
+                {/* Meal Format chip */}
+                {org.meal_format && (
+                  <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
+                    {org.meal_format}
+                  </span>
+                )}
+
+                {/* Serves Youth (0-18) - only if program_serving_minors or serves_minors is true */}
+                {(org.program_serving_minors === true || org.serves_minors === true) && (
+                  <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
+                    Serves Youth (0–18)
+                  </span>
+                )}
+
+                {/* Open Distribution - only if open_distribution is true */}
+                {org.open_distribution === true && (
+                  <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
+                    Open Distribution
+                  </span>
+                )}
+
+                {/* Volunteer Opportunities - only if volunteer_opportunities is true */}
+                {org.volunteer_opportunities === true && (
+                  <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
+                    Volunteer Opportunities
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Restaurant chips - placeholder for now */}
+            {isRestaurant && (
+              <div className="flex gap-2 flex-wrap mt-2">
+                <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
+                  Restaurant
+                </span>
+              </div>
+            )}
+
+            {/* CBO Progress Bar (dummy, 60-70% fill) */}
+            {isCBO && (
+              <div className="mt-3">
+                <div className="w-full bg-gray-200 h-2 rounded-full">
+                  <div 
+                    className="bg-gray-600 h-2 rounded-full transition-all"
+                    style={{ width: `${getDummyProgress()}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }
