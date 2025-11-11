@@ -19,10 +19,8 @@ export default function CBODetailPopup({ cbo }: { cbo: Organization }) {
   const servesMinors = cbo.program_serving_minors === true || cbo.serves_minors === true;
 
   return (
-    <div className="p-2.5 w-[300px]">
-      {/* Top image placeholder */}
-      <div className="w-full h-32 bg-gray-300 mb-4 rounded-lg flex items-center justify-center text-gray-500 text-sm">
-      </div>
+    <div className="w-full">
+      <div className="h-42 bg-gray-300 -m-4 mb-4" />
 
       {/* Header */}
       <h2 className="text-xl text-black font-semibold">{cbo.name}</h2>
