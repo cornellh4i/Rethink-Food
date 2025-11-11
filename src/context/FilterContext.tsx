@@ -68,7 +68,6 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         });
 
         setAllDestinations(mergedOrganizations);
-        setFilteredDestinations(mergedOrganizations);
       } catch (err) {
         console.error("Error fetching organizations:", err);
       }

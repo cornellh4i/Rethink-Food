@@ -74,10 +74,6 @@ export default function FilterBar({}) {
     resetFilters(); // Use the context function
   };
 
-  useEffect(() => {
-    applyFilter("All");
-  }, []);
-
   return (
     <>
       <div className="absolute top-10 left-4 z-10">
