@@ -128,10 +128,10 @@ export default function CBODetailPopup({ cbo }: { cbo: Organization }) {
         {activeTab === "how-it-works" && (
           <div className="space-y-4">
             {/* Mission section */}
-            {cbo.write_up && (
+            {cbo.writeup && (
               <div>
                 <h3 className="font-semibold text-sm text-black mb-2">Mission</h3>
-                <p>{cbo.write_up}</p>
+                <p>{cbo.writeup}</p>
               </div>
             )}
 

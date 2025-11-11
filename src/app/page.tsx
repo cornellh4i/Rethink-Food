@@ -33,7 +33,7 @@ export type Organization = {
   meal_format?: string;
   annual_funding_goal?: number;
   quarter_funding_goal?: number;
-  write_up?: string;
+  writeup?: string;
 };
 
 function HomeContent() {
