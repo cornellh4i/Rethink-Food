@@ -1,6 +1,7 @@
 "use client";
 
 import { useFilter } from "@/context/FilterContext";
+import { resetFilters } from "@/context/FilterContext";
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
@@ -15,7 +16,7 @@ const RestCBOData = [
   {
     value: "CBOS",
     label: "CBOs",
-    icon: "/formkit_people.png",
+    icon: "/formkit_people_black.png",
     alt: "People icon",
   },
 ];
@@ -37,7 +38,7 @@ const NEIGHBORHOODS = [
 ];
 
 export default function FilterBar({}) {
-  const { applyFilter } = useFilter();
+  const { applyFilter, resetFilters } = useFilter();
   const [activeTypeFilter, setActiveTypeFilter] = useState<string | null>(null);
   const [isBoroughDropdownOpen, setIsBoroughDropdownOpen] = useState(false);
   const [isNeighborhoodDropdownOpen, setIsNeighborhoodDropdownOpen] =
@@ -55,18 +56,23 @@ export default function FilterBar({}) {
   };
 
   const handleBoroughSelect = (borough: string) => {
-    setSelectedBorough(borough);
     setIsBoroughDropdownOpen(false);
-    if (borough === "Boroughs") {
+    
+    if (borough === "All Boroughs") {
+      setSelectedBorough("Boroughs");
+      setActiveTypeFilter(null);
       applyFilter("All");
     } else {
+      setSelectedBorough(borough);
       applyFilter(borough);
     }
   };
 
-  useEffect(() => {
-    applyFilter("All");
-  }, []);
+  const handleReset = () => {
+    setActiveTypeFilter(null);
+    setSelectedBorough("Boroughs");
+    resetFilters(); // Use the context function
+  };
 
   return (
     <>
@@ -154,6 +160,13 @@ export default function FilterBar({}) {
                   <span>{label}</span>
                 </button>
               ))}
+              
+              <button
+                onClick={handleReset}
+                className="flex items-center gap-2 px-6 py-3 rounded-full bg-[#E3E3E3] text-black hover:bg-gray-300 transition-all duration-200"
+              >
+                <span>Reset</span>
+              </button>
             </div>
          
         </div>

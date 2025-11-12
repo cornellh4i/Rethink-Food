@@ -1,3 +1,4 @@
+
 "use client";
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
@@ -8,8 +9,6 @@ mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
 const DEFAULT_CENTER: [number, number] = [-73.9836, 40.7469];
 const DEFAULT_ZOOM = 14;
-
-
 
 function createPngMarkerElement(orgType?: string): Promise<HTMLElement> {
   return new Promise((resolve) => {
@@ -42,9 +41,13 @@ async function createMarker(
     .addTo(mapInstance);
   return marker;
 }
-async function geocodeAddress(address: string): Promise<[number, number] | null> {
+
+async function geocodeAddress(address: string, borough?: string): Promise<[number, number] | null> {
   try {
-    const enriched = `${address}, New York, NY`;
+    const enriched = borough 
+      ? `${address}, ${borough}, New York, NY`
+      : `${address}, New York, NY`;
+    
     const res = await fetch(
       `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(enriched)}.json?access_token=${mapboxgl.accessToken}`
     );
@@ -62,8 +65,10 @@ async function geocodeAddress(address: string): Promise<[number, number] | null>
 
 export default function Map({
   selectedOrg,
+  onOrganizationSelect,
 }: {
   selectedOrg: Organization | null;
+  onOrganizationSelect?: (org: Organization) => void;
 }) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -120,7 +125,7 @@ export default function Map({
       for (const org of orgs) {
         if (!org.street_address) continue;
 
-        const coords = await geocodeAddress(org.street_address);
+        const coords = await geocodeAddress(org.street_address, org.borough);
         if (!coords) continue;
 
         const popupHTML = `
@@ -131,8 +136,33 @@ export default function Map({
           </div>
         `;
 
+        const popup = new mapboxgl.Popup({
+          closeButton: false,
+          closeOnClick: false,
+          anchor: 'bottom',
+          offset: 50
+        }).setHTML(popupHTML);
+
         const m = await createMarker((org.org_type === 'restaurant' ? 'restaurant' : 'cbo'), coords as [number, number], map.current!);
-        m.setPopup(new mapboxgl.Popup().setHTML(popupHTML));
+
+        const markerElement = m.getElement();
+
+        markerElement.style.cursor = 'pointer';
+
+        markerElement.addEventListener('mouseenter', () => {
+          popup.setLngLat(coords as [number, number]).addTo(map.current!);
+        });
+
+        markerElement.addEventListener('mouseleave', () => {
+          popup.remove();
+        });
+
+        markerElement.addEventListener('click', () => {
+          popup.remove()
+          if (onOrganizationSelect) {
+            onOrganizationSelect(org);
+          }
+        });
 
         newMarkers.push(m);
       }
@@ -141,13 +171,13 @@ export default function Map({
     }
 
     addMarkers();
-  }, [mapReady, isFilterActive, filteredDestinations, allDestinations]);
+  }, [mapReady, isFilterActive, filteredDestinations, allDestinations, onOrganizationSelect]);
 
   useEffect(() => {
     if (!mapReady || !map.current || !selectedOrg || !selectedOrg.street_address) return;
 
     (async () => {
-      const coords = await geocodeAddress(selectedOrg.street_address!);
+      const coords = await geocodeAddress(selectedOrg.street_address!, selectedOrg.borough);
       if (!coords) return;
       map.current!.flyTo({
         center: coords,
@@ -179,17 +209,17 @@ export default function Map({
       <div ref={mapContainer} className="w-full h-full" />
 
       <div className="absolute bottom-4 right-4 z-20 flex flex-col items-end gap-2">
-      <button
+        <button
           onClick={handleResize}
           className="w-10 h-10 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center hover:bg-gray-100"
           aria-label="Resize map"
           title="Resize map"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-700">
-            <polyline points="15 3 21 3 21 9" />
-            <polyline points="9 21 3 21 3 15" />
-            <line x1="21" y1="3" x2="14" y2="10" />
-            <line x1="3" y1="21" x2="10" y2="14" />
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-gray-700">
+            <polyline points="10 6 12 4 14 6" />
+            <polyline points="18 10 20 12 18 14" />
+            <polyline points="14 18 12 20 10 18" />
+            <polyline points="6 14 4 12 6 10" />
           </svg>
         </button>
 
