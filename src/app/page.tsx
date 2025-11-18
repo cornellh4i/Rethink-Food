@@ -5,7 +5,6 @@ import OrgList from "../components/OrgList";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabaseClient";
 import { FilterProvider, useFilter } from "../context/FilterContext";
-import MetricBar from "@/components/MetricBar";
 import FilterBar from "@/components/FilterBar";
 import OrganizationDetailPopup from "@/components/OrganizationDetailPopup";
 
@@ -59,38 +58,34 @@ function HomeContent() {
   }, [isFilterActive]);
 
   return (
-    <div className="flex flex-col h-screen">
-      <MetricBar />
+    <div className="flex h-screen overflow-hidden">
+      {isFilterActive && (
+        <div className="w-full md:w-1/4 md:min-w-[250px] md:max-w-[400px] border-r border-gray-300 overflow-y-auto bg-gray-50 z-20 absolute md:relative h-full md:h-auto left-0 top-0">
+          <div className="p-4">
+            <OrgList
+              onOrganizationSelect={(org) => {
+                setSelectedOrg(org);
+              }}
+            />
+          </div>
+        </div>
+      )}
 
-      <div className="flex flex-1 overflow-hidden mt-[210px] md:mt-[110px] relative">
-        {isFilterActive && (
-          <div className="w-full md:w-1/4 md:min-w-[250px] md:max-w-[400px] border-r border-gray-300 overflow-y-auto bg-gray-50 z-20 absolute md:relative h-full md:h-auto left-0 top-0">
-            <div className="p-4">
-              <OrgList
-                onOrganizationSelect={(org) => {
-                  setSelectedOrg(org);
-                }}
-              />
-            </div>
+      <div className="flex-1 relative min-w-0 w-full h-full">
+        <Map 
+          selectedOrg={selectedOrg}
+          onOrganizationSelect={(org) => setSelectedOrg(org)}
+        />
+        <FilterBar />
+
+        {selectedOrg && (
+          <div className="absolute bottom-4 left-4 right-4 md:left-8 md:right-auto md:max-w-md z-30">
+            <OrganizationDetailPopup
+              org={selectedOrg}
+              onClose={() => setSelectedOrg(null)}
+            />
           </div>
         )}
-
-        <div className="flex-1 relative min-w-0 w-full h-full">
-          <Map 
-            selectedOrg={selectedOrg}
-            onOrganizationSelect={(org) => setSelectedOrg(org)}
-          />
-          <FilterBar />
-
-          {selectedOrg && (
-            <div className="absolute bottom-4 left-4 right-4 md:left-8 md:right-auto md:max-w-md z-30">
-              <OrganizationDetailPopup
-                org={selectedOrg}
-                onClose={() => setSelectedOrg(null)}
-              />
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

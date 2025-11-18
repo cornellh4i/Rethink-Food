@@ -97,6 +97,13 @@ export default function OrgList({
         </button>
       </div>
 
+      {/* Match count */}
+      <div className="mb-3 px-2">
+        <p className="text-sm text-gray-600">
+          {filteredDestinations.length} {filteredDestinations.length === 1 ? 'match' : 'matches'} found
+        </p>
+      </div>
+
       <div className="space-y-3 max-h-full overflow-y-auto pr-2">
         {filteredDestinations.map((org: Organization) => {
           const isCBO = org.org_type === 'cbo';
@@ -216,9 +223,6 @@ export default function OrgList({
                 </div>
               )}
 
-      
-
-              {/* CBO Progress Bar (dummy, 60-70% fill) */}
               {isCBO && (
                 <div className="mt-3">
                   <div className="w-full bg-gray-200 h-2 rounded-full">
@@ -238,4 +242,3 @@ export default function OrgList({
     </div>
   );
 }
-
