@@ -3,7 +3,7 @@ import { Organization } from "@/app/page";
 import { useState, useEffect } from "react";
 
 export default function RestaurantDetailPopup({
-  restaurant,
+  restaurant
 }: {
   restaurant: Organization;
 }) {
@@ -12,9 +12,27 @@ export default function RestaurantDetailPopup({
     id: number;
     cbo_id: number;
     cbo_name: string;
-    meal_provider: string;
+    meal_provider: string; 
     restaurant_id: number;
+
+    cbo: CBO;
+
   }
+
+
+  interface CBO {
+    id: number;
+    name: string;
+    annual_funding_goal: number;
+    quarter_funding_goal: number;
+    cuisine_preference: string | null;
+    meal_format: string | null;
+    meal_provider: string | null;
+    open_distribution: boolean;
+    program_serving_minors: boolean;
+    volunteer_opportunities: boolean;
+  }
+  
   const [restaurantMap, setRestaurantMap] = useState<Record<any, any>>({});
   const [connectedCBOs, setConnectedCBOs] = useState<MealProvider[]>([]);
 
@@ -47,7 +65,9 @@ export default function RestaurantDetailPopup({
         const data = await res.json();
         console.log(data.meal_providers)
         setConnectedCBOs(data.meal_providers);
-      } catch (e) {}
+      } catch (e) {
+        console.log("error message:", e)
+      }
     };
 
   queryMealProviders()
@@ -95,25 +115,84 @@ export default function RestaurantDetailPopup({
         </div>
 
         <div className="mt-6">
-          <p className="text-sm text-black mb-4">
-            Support My Distribution Partners
-          </p>
+          {connectedCBOs && connectedCBOs.length > 0 && (
+            <p className="text-sm text-black mb-4">
+              Support My Distribution Partners
+            </p>
+          )}
 
           <div className="space-y-4 text-black">
-            {connectedCBOs?.map((partner, index) => (
-              <div
-                key={index}
-                className="border rounded-xl p-3 shadow-sm bg-white hover:shadow-md transition"
-              >
-                {/* Partner Name */}
-                <h3 className="text-base font-semibold mb-2">{partner.cbo_name}</h3>
+            {connectedCBOs?.map((partner, index) => {
+              const cbo = partner.cbo; // shorter reference
 
-                
+              // Split cuisine preferences into chips
+              const cuisines = cbo.cuisine_preference
+                ? cbo.cuisine_preference.split(";").map((c) => c.trim())
+                : [];
 
-      
-        
-              </div>
-            ))}
+              return (
+                <div
+                  key={index}
+                  className="border-gray-400 rounded-lg p-3 shadow-sm bg-white hover:shadow-md transition"
+                >
+                  {/* CBO Name */}
+                  <h3 className="text-lg font-semibold">{cbo.name}</h3>
+
+                  <div className="flex gap-2 flex-wrap mt-2">
+                    {/* Cuisine Preference Chips */}
+                    {cuisines.map((cuisine, idx) => (
+                      <span
+                        key={`cuisine-${idx}`}
+                        className="px-3 py-1 rounded-full text-xs text-black"
+                        style={{ backgroundColor: "#E6E6E6" }}
+                      >
+                        {cuisine}
+                      </span>
+                    ))}
+
+                    {/* Meal Format */}
+                    {cbo.meal_format && (
+                      <span
+                        className="px-3 py-1 rounded-full text-xs text-black"
+                        style={{ backgroundColor: "#E6E6E6" }}
+                      >
+                        {cbo.meal_format}
+                      </span>
+                    )}
+
+                    {/* Serves Youth */}
+                    {cbo.program_serving_minors && (
+                      <span
+                        className="px-3 py-1 rounded-full text-xs text-black"
+                        style={{ backgroundColor: "#E6E6E6" }}
+                      >
+                        Serves Youth (0–18)
+                      </span>
+                    )}
+
+                    {/* Open Distribution */}
+                    {cbo.open_distribution && (
+                      <span
+                        className="px-3 py-1 rounded-full text-xs text-black"
+                        style={{ backgroundColor: "#E6E6E6" }}
+                      >
+                        Open Distribution
+                      </span>
+                    )}
+
+                    {/* Volunteer Opportunities */}
+                    {cbo.volunteer_opportunities && (
+                      <span
+                        className="px-3 py-1 rounded-full text-xs text-black"
+                        style={{ backgroundColor: "#E6E6E6" }}
+                      >
+                        Volunteer Opportunities
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
