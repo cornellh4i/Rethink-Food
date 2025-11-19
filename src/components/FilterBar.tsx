@@ -1,7 +1,6 @@
 "use client";
 
 import { useFilter } from "@/context/FilterContext";
-import { resetFilters } from "@/context/FilterContext";
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faSearch } from "@fortawesome/free-solid-svg-icons";
@@ -47,7 +46,6 @@ export default function FilterBar({ onOrganizationSelect }: { onOrganizationSele
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
 
-  // Search through all organizations and show up to 5 matches
   useEffect(() => {
     if (searchQuery.trim()) {
       const searchLower = searchQuery.toLowerCase().trim();
@@ -166,7 +164,7 @@ export default function FilterBar({ onOrganizationSelect }: { onOrganizationSele
               onClick={() =>
                 setIsNeighborhoodDropdownOpen(!isNeighborhoodDropdownOpen)
               }
-              className="flex items-center gap-2 px-6 py-3 rounded-full bg-[#E3E3E3] text-black hover:bg-gray-300 transition-all duration-200"
+              className="pl-10 pr-6 py-3 rounded-full bg-[#E3E3E3] text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 w-full md:w-[20vw] md:min-w-[250px] md:max-w-[400px]"
             >
               <span>Neighborhoods</span>
               <FontAwesomeIcon

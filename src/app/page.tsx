@@ -97,7 +97,6 @@ function HomeContent() {
         )}
       </div>
 
-      {/* FilterBar at the end - overlays on top of everything, not constrained by flex */}
       <div className="absolute top-10 left-4 z-40 pointer-events-none">
         <div className="pointer-events-auto">
           <FilterBar onOrganizationSelect={(org) => setSelectedOrg(org)} />
