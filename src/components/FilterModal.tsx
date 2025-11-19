@@ -66,7 +66,13 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
             {REGIONS.map((region) => (
               <button
                 key={region}
-                onClick={() => setSelectedRegion(region)}
+                 onClick={() => {
+    setSelectedRegion(region);
+
+    if (region === "Miami") {
+      applyFilter("Miami");
+    }
+  }}
                 className={`flex-1 py-2 rounded-full transition-all duration-200 text-sm font-medium ${
                   selectedRegion === region
                     ? "bg-[#2D5F4F] text-white"

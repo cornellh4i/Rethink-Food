@@ -95,7 +95,7 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setIsFilterActive(true);
 
     // Handle selecting borough - toggle in array
-    if (["Bronx", "Brooklyn", "Manhattan", "Queens", "Staten Island"].includes(key)) {
+    if (["Bronx", "Brooklyn", "Manhattan", "Queens", "Staten Island","Miami"].includes(key)) {
       const newBoroughs = selectedBoroughs.includes(key)
         ? selectedBoroughs.filter(b => b !== key)
         : [...selectedBoroughs, key];
