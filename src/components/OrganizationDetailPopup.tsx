@@ -8,9 +8,11 @@ import { useEffect, useRef, useState } from "react";
 export default function OrganizationDetailPopup({
   org,
   onClose,
+  onCBOIdSelect,
 }: {
   org: Organization;
   onClose: () => void;
+  onCBOIdSelect?: (cboId: number) => void;
 }) {
   const popupRef = useRef<HTMLDivElement>(null);
   const [cboData, setCboData] = useState<any>(null);
@@ -69,7 +71,7 @@ export default function OrganizationDetailPopup({
         </button>
 
         {org.org_type === "restaurant" ? (
-          <RestaurantDetailPopup restaurant={org} />
+          <RestaurantDetailPopup restaurant={org} onCBOClick={onCBOIdSelect} />
         ) : (
           <CBODetailPopup cbo={org} cboData={cboData} />
         )}

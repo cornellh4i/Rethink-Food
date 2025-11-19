@@ -3,9 +3,11 @@ import { Organization } from "@/app/page";
 import { useState, useEffect } from "react";
 
 export default function RestaurantDetailPopup({
-  restaurant
+  restaurant,
+  onCBOClick
 }: {
   restaurant: Organization;
+  onCBOClick?: (cboId: number) => void;
 }) {
 
   interface MealProvider {
@@ -14,7 +16,6 @@ export default function RestaurantDetailPopup({
     cbo_name: string;
     meal_provider: string; 
     restaurant_id: number;
-
     cbo: CBO;
 
   }
@@ -123,7 +124,8 @@ export default function RestaurantDetailPopup({
 
           <div className="space-y-4 text-black">
             {connectedCBOs?.map((partner, index) => {
-              const cbo = partner.cbo; // shorter reference
+              const cbo = partner.cbo;
+          
 
               // Split cuisine preferences into chips
               const cuisines = cbo.cuisine_preference
@@ -133,7 +135,10 @@ export default function RestaurantDetailPopup({
               return (
                 <div
                   key={index}
-                  className="border-gray-400 rounded-lg p-3 shadow-sm bg-white hover:shadow-md transition"
+                  className="border-gray-400 rounded-lg p-3 shadow-sm bg-white hover:shadow-md transition cursor-pointer"
+                  onClick={() => {
+                    onCBOClick?.(cbo.id);
+                  }}
                 >
                   {/* CBO Name */}
                   <h3 className="text-lg font-semibold">{cbo.name}</h3>

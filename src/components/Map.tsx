@@ -138,9 +138,11 @@ function makeCurvedPath(
 export default function Map({
   selectedOrg,
   onOrganizationSelect,
+  onCBOIdSelect,
 }: {
   selectedOrg: Organization | null;
   onOrganizationSelect?: (org: Organization) => void;
+  onCBOIdSelect?: (cboId: number) => void;
 }) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -292,8 +294,13 @@ export default function Map({
 
   // Fetch connected CBOs when a restaurant is selected
   useEffect(() => {
+    // Reset arrows immediately when selectedOrg changes
+    setConnectedCBOs([]);
+    if (deckOverlay.current) {
+      deckOverlay.current.setProps({ layers: [] });
+    }
+
     if (!selectedOrg || selectedOrg.org_type !== "restaurant") {
-      setConnectedCBOs([]);
       return;
     }
 
@@ -326,8 +333,8 @@ export default function Map({
       return;
     }
 
-    if (connectedCBOs.length === 0 || !selectedOrg) {
-      console.log("No connected CBOs or no selected org, clearing paths");
+    if (connectedCBOs.length === 0 || !selectedOrg || selectedOrg.org_type !== "restaurant") {
+      console.log("No connected CBOs or no selected org or not a restaurant, clearing paths");
       deckOverlay.current.setProps({ layers: [] });
       return;
     }
@@ -425,6 +432,8 @@ export default function Map({
       essential: true,
     });
   };
+
+  console.log("selected:", selectedOrg)
 
   return (
     <div className="w-full h-full relative">
