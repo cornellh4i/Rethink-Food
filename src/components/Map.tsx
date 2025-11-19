@@ -153,6 +153,7 @@ export default function Map({
   const [mapReady, setMapReady] = useState<boolean>(false);
   const [markers, setMarkers] = useState<mapboxgl.Marker[]>([]);
   const [connectedCBOs, setConnectedCBOs] = useState<MealProvider[]>([]);
+  const [connectedRestaurants, setConnectedRestaurants] = useState<MealProvider[]>([]);
 
   useEffect(() => {
     if (map.current) return;
@@ -289,41 +290,62 @@ export default function Map({
     })();
   }, [selectedOrg, mapReady]);
 
-  // Fetch connected CBOs when a restaurant is selected
+  // Fetch connected CBOs when a restaurant is selected, or connected Restaurants when a CBO is selected
   useEffect(() => {
     // Reset arrows immediately when selectedOrg changes
     setConnectedCBOs([]);
+    setConnectedRestaurants([]);
     if (deckOverlay.current) {
       deckOverlay.current.setProps({ layers: [] });
     }
 
-    if (!selectedOrg || selectedOrg.org_type !== "restaurant") {
+    if (!selectedOrg) {
       return;
     }
 
-    const fetchConnectedCBOs = async () => {
-      try {
-        const res = await fetch(
-          `/api/meal_providers?restaurant_id=${selectedOrg.id}`
-        );
-        const data = await res.json();
-        setConnectedCBOs(data.meal_providers || []);
-      } catch (error) {
-        console.error("Error fetching connected CBOs:", error);
-        setConnectedCBOs([]);
-      }
-    };
+    if (selectedOrg.org_type === "restaurant") {
+      const fetchConnectedCBOs = async () => {
+        try {
+          const res = await fetch(
+            `/api/meal_providers?restaurant_id=${selectedOrg.id}`
+          );
+          const data = await res.json();
+          setConnectedCBOs(data.meal_providers || []);
+        } catch (error) {
+          console.error("Error fetching connected CBOs:", error);
+          setConnectedCBOs([]);
+        }
+      };
 
-    fetchConnectedCBOs();
+      fetchConnectedCBOs();
+    } else if (selectedOrg.org_type === "cbo") {
+      const fetchConnectedRestaurants = async () => {
+        try {
+          const res = await fetch(
+            `/api/meal_providers?cbo_id=${selectedOrg.id}`
+          );
+          const data = await res.json();
+          setConnectedRestaurants(data.meal_providers || []);
+        } catch (error) {
+          console.error("Error fetching connected restaurants:", error);
+          setConnectedRestaurants([]);
+        }
+      };
+
+      fetchConnectedRestaurants();
+    }
   }, [selectedOrg]);
 
-  // Create and update path layer when connected CBOs change
+  // Create and update path layer when connected CBOs or Restaurants change
   useEffect(() => {
     if (!mapReady || !map.current || !deckOverlay.current) {
       return;
     }
 
-    if (connectedCBOs.length === 0 || !selectedOrg || selectedOrg.org_type !== "restaurant") {
+    if (
+      (connectedCBOs.length === 0 && connectedRestaurants.length === 0) ||
+      !selectedOrg
+    ) {
       deckOverlay.current.setProps({ layers: [] });
       return;
     }
@@ -336,34 +358,70 @@ export default function Map({
         cboName: string;
       }[] = [];
 
-      const restaurantCoords = await geocodeAddress(
-        selectedOrg.street_address!,
-        selectedOrg.borough
-      );
-      if (!restaurantCoords) return;
-
-      for (const provider of connectedCBOs) {
-        const cboOrg = allDestinations.find(
-          (org) => org.id === provider.cbo_id
+      // Handle Restaurant → CBO arrows (when restaurant is selected)
+      if (selectedOrg.org_type === "restaurant" && connectedCBOs.length > 0) {
+        const restaurantCoords = await geocodeAddress(
+          selectedOrg.street_address!,
+          selectedOrg.borough
         );
-        if (!cboOrg?.street_address) continue;
+        if (!restaurantCoords) return;
 
+        for (const provider of connectedCBOs) {
+          const cboOrg = allDestinations.find(
+            (org) => org.id === provider.cbo_id
+          );
+          if (!cboOrg?.street_address) continue;
+
+          const cboCoords = await geocodeAddress(
+            cboOrg.street_address,
+            cboOrg.borough
+          );
+          if (!cboCoords) continue;
+
+          const path = makeCurvedPath(
+            restaurantCoords as [number, number],
+            cboCoords as [number, number]
+          );
+
+          paths.push({
+            path,
+            restaurantName: selectedOrg.name,
+            cboName: provider.cbo_name,
+          });
+        }
+      }
+
+      // Handle Restaurant → CBO arrows (when CBO is selected)
+      if (selectedOrg.org_type === "cbo" && connectedRestaurants.length > 0) {
         const cboCoords = await geocodeAddress(
-          cboOrg.street_address,
-          cboOrg.borough
+          selectedOrg.street_address!,
+          selectedOrg.borough
         );
-        if (!cboCoords) continue;
+        if (!cboCoords) return;
 
-        const path = makeCurvedPath(
-          restaurantCoords as [number, number],
-          cboCoords as [number, number]
-        );
+        for (const provider of connectedRestaurants) {
+          const restaurantOrg = allDestinations.find(
+            (org) => org.id === provider.restaurant_id
+          );
+          if (!restaurantOrg?.street_address) continue;
 
-        paths.push({
-          path,
-          restaurantName: selectedOrg.name,
-          cboName: provider.cbo_name,
-        });
+          const restaurantCoords = await geocodeAddress(
+            restaurantOrg.street_address,
+            restaurantOrg.borough
+          );
+          if (!restaurantCoords) continue;
+
+          const path = makeCurvedPath(
+            restaurantCoords as [number, number],
+            cboCoords as [number, number]
+          );
+
+          paths.push({
+            path,
+            restaurantName: provider.restaurant.name,
+            cboName: selectedOrg.name,
+          });
+        }
       }
 
       if (paths.length === 0) {
@@ -387,7 +445,7 @@ export default function Map({
     };
 
     createPaths();
-  }, [connectedCBOs, mapReady, selectedOrg, allDestinations]);
+  }, [connectedCBOs, connectedRestaurants, mapReady, selectedOrg, allDestinations]);
 
   const handleZoomIn = () => {
     if (!map.current) return;

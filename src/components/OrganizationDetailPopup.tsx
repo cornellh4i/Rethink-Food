@@ -36,33 +36,14 @@ export default function OrganizationDetailPopup({
       fetchCBOData();
     }
   }, [org]);
-
-  // Close when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onClose]);
-
   if (!org) return null;
 
   return (
     <>
-        {/* Click-outside area — covers everything to the right of 300px */}
-         <div
-        className="fixed top-0 right-0 h-full z-40"
-        style={{ left: "500px" }}
-        onClick={onClose}
-          />
-
       {/* actual popup, stays in normal layout position */}
       <div
         ref={popupRef}
-        className="bg-white rounded-xl shadow-xl border border-gray-200 p-4 relative max-h-[80vh] overflow-y-auto w-[340px] z-50"
+        className="bg-white rounded-xl shadow-xl border border-gray-200 p-4 relative max-h-[80vh] overflow-y-auto w-[340px] z-50 pointer-events-auto"
       >
         <button
           onClick={onClose}

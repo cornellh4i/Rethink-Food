@@ -71,7 +71,7 @@ export default function RestaurantDetailPopup({
     };
 
   queryMealProviders()
-  }, []);
+  }, [restaurant.id]);
 
   return (
     <div className="w-full">
