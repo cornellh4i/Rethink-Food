@@ -65,6 +65,13 @@ function HomeContent() {
     }
   };
 
+  const handleRestaurantIdSelect = (restaurantId: number) => {
+    const fullRestaurantOrg = allDestinations.find(org => org.id === restaurantId);
+    if (fullRestaurantOrg) {
+      setSelectedOrg(fullRestaurantOrg);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen">
       <MetricBar />
@@ -96,6 +103,7 @@ function HomeContent() {
                 org={selectedOrg}
                 onClose={() => setSelectedOrg(null)}
                 onCBOIdSelect={handleCBOIdSelect}
+                onRestaurantIdSelect={handleRestaurantIdSelect}
               />
             </div>
           )}

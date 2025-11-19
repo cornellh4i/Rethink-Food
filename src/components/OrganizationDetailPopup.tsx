@@ -9,10 +9,12 @@ export default function OrganizationDetailPopup({
   org,
   onClose,
   onCBOIdSelect,
+  onRestaurantIdSelect,
 }: {
   org: Organization;
   onClose: () => void;
   onCBOIdSelect?: (cboId: number) => void;
+  onRestaurantIdSelect?: (restaurantId: number) => void;
 }) {
   const popupRef = useRef<HTMLDivElement>(null);
   const [cboData, setCboData] = useState<any>(null);
@@ -73,7 +75,7 @@ export default function OrganizationDetailPopup({
         {org.org_type === "restaurant" ? (
           <RestaurantDetailPopup restaurant={org} onCBOClick={onCBOIdSelect} />
         ) : (
-          <CBODetailPopup cbo={org} cboData={cboData} />
+          <CBODetailPopup cbo={org} cboData={cboData} onRestaurantClick={onRestaurantIdSelect} />
         )}
       </div>
     </>
