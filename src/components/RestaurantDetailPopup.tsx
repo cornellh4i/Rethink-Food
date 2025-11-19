@@ -64,7 +64,6 @@ export default function RestaurantDetailPopup({
           `/api/meal_providers?restaurant_id=${restaurant.id}`
         );
         const data = await res.json();
-        console.log(data.meal_providers)
         setConnectedCBOs(data.meal_providers);
       } catch (e) {
         console.log("error message:", e)
@@ -125,7 +124,6 @@ export default function RestaurantDetailPopup({
           <div className="space-y-4 text-black">
             {connectedCBOs?.map((partner, index) => {
               const cbo = partner.cbo;
-          
 
               // Split cuisine preferences into chips
               const cuisines = cbo.cuisine_preference

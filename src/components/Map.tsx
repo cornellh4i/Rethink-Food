@@ -165,14 +165,11 @@ export default function Map({
     });
 
     map.current.on("load", () => {
-      console.log("Map loaded, initializing deck.gl overlay");
-
       if (!deckOverlay.current && map.current) {
         deckOverlay.current = new MapboxOverlay({
           layers: [],
         });
         map.current.addControl(deckOverlay.current);
-        console.log("Deck.gl overlay initialized on map load");
       }
 
       setMapReady(true);
@@ -322,25 +319,16 @@ export default function Map({
 
   // Create and update path layer when connected CBOs change
   useEffect(() => {
-    console.log("Path layer effect triggered:", {
-      mapReady,
-      connectedCBOs: connectedCBOs.length,
-      selectedOrg: selectedOrg?.name,
-    });
-
     if (!mapReady || !map.current || !deckOverlay.current) {
-      console.log("Map or deck.gl not ready");
       return;
     }
 
     if (connectedCBOs.length === 0 || !selectedOrg || selectedOrg.org_type !== "restaurant") {
-      console.log("No connected CBOs or no selected org or not a restaurant, clearing paths");
       deckOverlay.current.setProps({ layers: [] });
       return;
     }
 
     const createPaths = async () => {
-      console.log("Creating paths for", connectedCBOs.length, "CBOs");
 
       const paths: {
         path: [number, number][];
@@ -352,28 +340,18 @@ export default function Map({
         selectedOrg.street_address!,
         selectedOrg.borough
       );
-      console.log("Restaurant coords:", restaurantCoords);
       if (!restaurantCoords) return;
 
       for (const provider of connectedCBOs) {
-        console.log(
-          "Processing provider:",
-          provider.cbo_name,
-          "cbo_id:",
-          provider.cbo_id
-        );
-
         const cboOrg = allDestinations.find(
           (org) => org.id === provider.cbo_id
         );
-        console.log("Found CBO org:", cboOrg);
         if (!cboOrg?.street_address) continue;
 
         const cboCoords = await geocodeAddress(
           cboOrg.street_address,
           cboOrg.borough
         );
-        console.log("CBO coords:", cboCoords);
         if (!cboCoords) continue;
 
         const path = makeCurvedPath(
@@ -387,8 +365,6 @@ export default function Map({
           cboName: provider.cbo_name,
         });
       }
-
-      console.log("Total paths created:", paths.length, paths);
 
       if (paths.length === 0) {
         deckOverlay.current!.setProps({ layers: [] });
@@ -408,7 +384,6 @@ export default function Map({
       });
 
       deckOverlay.current!.setProps({ layers: [pathLayer] });
-      console.log("Path layer set successfully");
     };
 
     createPaths();
@@ -432,8 +407,6 @@ export default function Map({
       essential: true,
     });
   };
-
-  console.log("selected:", selectedOrg)
 
   return (
     <div className="w-full h-full relative">
