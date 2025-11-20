@@ -28,7 +28,7 @@ export type Organization = {
 };
 
 function HomeContent() {
-  const { isFilterActive } = useFilter();
+  const { isFilterActive, allDestinations } = useFilter();
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
 
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -58,6 +58,20 @@ function HomeContent() {
     setSelectedOrg(null);
   }, [isFilterActive]);
 
+  const handleCBOIdSelect = (cboId: number) => {
+    const fullCBOOrg = allDestinations.find(org => org.id === cboId);
+    if (fullCBOOrg) {
+      setSelectedOrg(fullCBOOrg);
+    }
+  };
+
+  const handleRestaurantIdSelect = (restaurantId: number) => {
+    const fullRestaurantOrg = allDestinations.find(org => org.id === restaurantId);
+    if (fullRestaurantOrg) {
+      setSelectedOrg(fullRestaurantOrg);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen">
       <MetricBar />
@@ -76,9 +90,10 @@ function HomeContent() {
         )}
 
         <div className="flex-1 relative min-w-0 w-full h-full">
-          <Map 
+          <Map
             selectedOrg={selectedOrg}
             onOrganizationSelect={(org) => setSelectedOrg(org)}
+            onCBOIdSelect={handleCBOIdSelect}
           />
           <FilterBar />
 
@@ -87,6 +102,8 @@ function HomeContent() {
               <OrganizationDetailPopup
                 org={selectedOrg}
                 onClose={() => setSelectedOrg(null)}
+                onCBOIdSelect={handleCBOIdSelect}
+                onRestaurantIdSelect={handleRestaurantIdSelect}
               />
             </div>
           )}

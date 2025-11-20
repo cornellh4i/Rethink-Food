@@ -1,15 +1,50 @@
 'use client';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Organization } from "@/app/page";
 
 export default function CBODetailPopup({ 
   cbo, 
-  cboData 
+  cboData,
+  onRestaurantClick
 }: { 
   cbo: Organization;
   cboData?: any;
+  onRestaurantClick?: (restaurantId: number) => void;
 }) {
   const [activeTab, setActiveTab] = useState<"how-it-works" | "who-we-serve">("how-it-works");
+
+  interface MealProvider {
+    id: number;
+    cbo_id: number;
+    restaurant_id: number;
+    restaurant: Restaurant;
+  }
+
+  interface Restaurant {
+    id: number;
+    name: string;
+    cuisine: string | null;
+    restaurant_type: string | null;
+    number_of_meals: number | null;
+  }
+
+  const [connectedRestaurants, setConnectedRestaurants] = useState<MealProvider[]>([]);
+
+  useEffect(() => {
+    const queryMealProviders = async () => {
+      try {
+        const res = await fetch(
+          `/api/meal_providers?cbo_id=${cbo.id}`
+        );
+        const data = await res.json();
+        setConnectedRestaurants(data.meal_providers || []);
+      } catch (e) {
+        console.log("error fetching meal providers:", e);
+      }
+    };
+
+    queryMealProviders();
+  }, [cbo.id]);
 
   const cuisinePreferences: string[] = cboData?.cuisine_preference
     ? cboData.cuisine_preference.split(';').map((c: string) => c.trim()).filter((c: string) => c.length > 0)
@@ -69,6 +104,26 @@ export default function CBODetailPopup({
           </span>
         )}
       </div>
+
+      {/* Meals Provided By Section */}
+      {connectedRestaurants && connectedRestaurants.length > 0 && (
+        <div className="mt-4">
+          <p className="text-xs text-gray-600">
+            Provided by{" "}
+            {connectedRestaurants.map((provider, index) => (
+              <span key={index}>
+                <span
+                  onClick={() => onRestaurantClick?.(provider.restaurant.id)}
+                  className="text-black hover:underline cursor-pointer"
+                >
+                  {provider.restaurant.name}
+                </span>
+                {index < connectedRestaurants.length - 1 && ", "}
+              </span>
+            ))}
+          </p>
+        </div>
+      )}
 
       {/* Computed fields */}
       <div className="mt-4">
