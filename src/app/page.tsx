@@ -27,7 +27,7 @@ export type Organization = {
 };
 
 function HomeContent() {
-  const { isFilterActive, closeSidebar } = useFilter();
+  const { isFilterActive, allDestinations } = useFilter();
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
 
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -56,6 +56,20 @@ function HomeContent() {
   useEffect(() => {
     setSelectedOrg(null);
   }, [isFilterActive]);
+
+  const handleCBOIdSelect = (cboId: number) => {
+    const fullCBOOrg = allDestinations.find(org => org.id === cboId);
+    if (fullCBOOrg) {
+      setSelectedOrg(fullCBOOrg);
+    }
+  };
+
+  const handleRestaurantIdSelect = (restaurantId: number) => {
+    const fullRestaurantOrg = allDestinations.find(org => org.id === restaurantId);
+    if (fullRestaurantOrg) {
+      setSelectedOrg(fullRestaurantOrg);
+    }
+  };
 
   return (
     <div className="flex h-screen overflow-hidden relative">
@@ -97,9 +111,24 @@ function HomeContent() {
         )}
       </div>
 
-      <div className="absolute top-10 left-4 z-40 pointer-events-none">
-        <div className="pointer-events-auto">
-          <FilterBar onOrganizationSelect={(org) => setSelectedOrg(org)} />
+        <div className="flex-1 relative min-w-0 w-full h-full">
+          <Map
+            selectedOrg={selectedOrg}
+            onOrganizationSelect={(org) => setSelectedOrg(org)}
+            onCBOIdSelect={handleCBOIdSelect}
+          />
+          <FilterBar />
+
+          {selectedOrg && (
+            <div className="absolute bottom-4 left-4 right-4 md:left-8 md:right-auto md:max-w-md z-30">
+              <OrganizationDetailPopup
+                org={selectedOrg}
+                onClose={() => setSelectedOrg(null)}
+                onCBOIdSelect={handleCBOIdSelect}
+                onRestaurantIdSelect={handleRestaurantIdSelect}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
