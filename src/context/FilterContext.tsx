@@ -6,6 +6,7 @@ interface FilterContextType {
   filteredDestinations: any[] | undefined;
   setFilteredDestinations: React.Dispatch<React.SetStateAction<any[] | undefined>>;
   isFilterActive: boolean;
+  setIsFilterActive: React.Dispatch<React.SetStateAction<boolean>>;
   applyFilter: (key: string) => void;
   resetFilters: () => void;
   closeSidebar: () => void;
@@ -81,15 +82,10 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     fetchData();
   }, []);
 
-  // Apply search filter whenever searchQuery changes
+  // Don't auto-filter on search anymore - search will show dropdown instead
   useEffect(() => {
-    if (searchQuery.trim()) {
-      setIsFilterActive(true);
-      filterData(selectedBoroughs, selectedType, searchQuery);
-    } else {
-      filterData(selectedBoroughs, selectedType, "");
-    }
-  }, [searchQuery, selectedBoroughs, selectedType, allDestinations]);
+    filterData(selectedBoroughs, selectedType, "");
+  }, [selectedBoroughs, selectedType, allDestinations]);
 
   const applyFilter = (key: string) => {
     setIsFilterActive(true);
@@ -109,7 +105,7 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return;
       }
       
-      filterData(newBoroughs, selectedType, searchQuery);
+      filterData(newBoroughs, selectedType);
       return;
     }
 
@@ -129,7 +125,7 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return;
       }
       
-      filterData(selectedBoroughs, newType, searchQuery);
+      filterData(selectedBoroughs, newType);
       return;
     }
 
@@ -144,7 +140,7 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
-  const filterData = (boroughs: string[], type: "Restaurant" | "CBO" | null, search: string) => {
+  const filterData = (boroughs: string[], type: "Restaurant" | "CBO" | null) => {
     if (!Array.isArray(allDestinations)) return;
 
     let filtered = [...allDestinations];
@@ -159,13 +155,6 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         if (type === "Restaurant") return orgType === "restaurant";
         if (type === "CBO") return orgType === "cbo";
         return true;
-      });
-    }
-
-    if (search.trim()) {
-      const searchLower = search.toLowerCase().trim();
-      filtered = filtered.filter((dest) => {
-        return dest.name?.toLowerCase().includes(searchLower);
       });
     }
 
@@ -189,6 +178,7 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       filteredDestinations,
       setFilteredDestinations,
       isFilterActive,
+      setIsFilterActive,
       applyFilter,
       resetFilters,
       closeSidebar,

@@ -1,7 +1,6 @@
 "use client";
 
 import { useFilter } from "@/context/FilterContext";
-import { resetFilters } from "@/context/FilterContext";
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faSearch } from "@fortawesome/free-solid-svg-icons";
@@ -38,12 +37,28 @@ const NEIGHBORHOODS = [
   "Neighborhood 5",
 ];
 
-export default function FilterBar() {
-  const { applyFilter, resetFilters, searchQuery, setSearchQuery, selectedType, selectedBoroughs } = useFilter();
+export default function FilterBar({ onOrganizationSelect }: { onOrganizationSelect?: (org: any) => void }) {
+  const { applyFilter, resetFilters, searchQuery, setSearchQuery, selectedType, selectedBoroughs, allDestinations, setIsFilterActive } = useFilter();
   const [isBoroughDropdownOpen, setIsBoroughDropdownOpen] = useState(false);
   const [isNeighborhoodDropdownOpen, setIsNeighborhoodDropdownOpen] =
     useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      const searchLower = searchQuery.toLowerCase().trim();
+      const matches = allDestinations
+        .filter((org) => org.name?.toLowerCase().includes(searchLower))
+        .slice(0, 5);
+      setSearchResults(matches);
+      setShowSearchDropdown(matches.length > 0);
+    } else {
+      setSearchResults([]);
+      setShowSearchDropdown(false);
+    }
+  }, [searchQuery, allDestinations]);
 
   const handleTypeFilterClick = (filterValue: string) => {
     applyFilter(filterValue);
@@ -60,7 +75,7 @@ export default function FilterBar() {
   };
 
   const handleReset = () => {
-    resetFilters();
+    resetFilters(); // Use the context function - it will reset everything
   };
 
   const handleSortClick = () => {
@@ -69,30 +84,46 @@ export default function FilterBar() {
 
   return (
     <>
-      <div className="absolute top-10 left-4 z-10">
-        <div className="flex flex-wrap gap-4">
-          {/* Search Bar */}
-          <div className="relative">
+      <div className="flex flex-wrap gap-4">
+        <div className="relative">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search..."
-              className="pl-10 pr-6 py-3 rounded-full bg-[#E3E3E3] text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 min-w-[200px]"
-            />
+            className="pl-10 pr-6 py-3 rounded-full bg-[#E3E3E3] text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 min-w-[300px]"            />
             <FontAwesomeIcon
               icon={faSearch}
               className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"
             />
+            
+            {showSearchDropdown && (
+              <div className="absolute mt-2 bg-white rounded-lg shadow-lg py-2 min-w-[300px] max-w-[400px] z-50">
+                {searchResults.map((org) => (
+                  <button
+                    key={org.id}
+                    onClick={() => {
+                      setShowSearchDropdown(false);
+                      setSearchQuery("");
+                      setIsFilterActive(true);
+                      onOrganizationSelect?.(org);
+                    }}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="font-semibold text-black">{org.name}</div>
+                    <div className="text-sm text-gray-600">
+                      {org.org_type === "restaurant" ? "Restaurant" : "CBO"} · {org.borough}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Sort Button */}
           <button
             onClick={handleSortClick}
-            className="flex items-center gap-2 px-6 py-3 rounded-full bg-[#E3E3E3] text-black hover:bg-gray-300 transition-all duration-200"
           >
             <img src="/sort.png" alt="Sort icon" className="w-5 h-5" />
-            <span>Sort</span>
           </button>
          
           <div className="relative">
@@ -133,7 +164,7 @@ export default function FilterBar() {
               onClick={() =>
                 setIsNeighborhoodDropdownOpen(!isNeighborhoodDropdownOpen)
               }
-              className="flex items-center gap-2 px-6 py-3 rounded-full bg-[#E3E3E3] text-black hover:bg-gray-300 transition-all duration-200"
+              className="pl-10 pr-6 py-3 rounded-full bg-[#E3E3E3] text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 w-full md:w-[20vw] md:min-w-[250px] md:max-w-[400px]"
             >
               <span>Neighborhoods</span>
               <FontAwesomeIcon
@@ -150,7 +181,6 @@ export default function FilterBar() {
                     key={neighborhood}
                     onClick={() => {
                       setIsNeighborhoodDropdownOpen(false);
-                      // No filtering logic for neighborhoods yet
                     }}
                     className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors"
                   >
@@ -191,7 +221,6 @@ export default function FilterBar() {
             </button>
           </div>
         </div>
-      </div>
 
       {isFilterModalOpen && (
         <FilterModal 
@@ -200,5 +229,5 @@ export default function FilterBar() {
         />
       )}
     </>
-  );
+    );
 }

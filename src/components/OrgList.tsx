@@ -78,25 +78,6 @@ export default function OrgList({
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-4">
-        <div className="flex-1 flex items-center gap-2 px-4 py-2 rounded-full" style={{ backgroundColor: '#F5F5F5' }}>
-          <img src="/search_symbol.png" alt="Search" className="w-4 h-4" />
-          <input
-            type="text"
-            placeholder="Search"
-            className="flex-1 bg-transparent outline-none text-sm text-black placeholder-gray-500"
-          />
-        </div>
-        
-        <button
-          onClick={closeSidebar}
-          className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-          aria-label="Close sidebar"
-        >
-          <img src="/close_sidebar.png" alt="Close sidebar" className="w-5 h-5" />
-        </button>
-      </div>
-
       {/* Match count */}
       <div className="mb-3 px-2">
         <p className="text-sm text-gray-600">
@@ -223,6 +204,9 @@ export default function OrgList({
                 </div>
               )}
 
+      
+
+              {/* CBO Progress Bar (dummy, 60-70% fill) */}
               {isCBO && (
                 <div className="mt-3">
                   <div className="w-full bg-gray-200 h-2 rounded-full">
