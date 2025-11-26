@@ -186,30 +186,32 @@ export default function Map({
     });
   }, []);
 
-  const clearMarkers = () => {
-    markers.forEach((m) => m.remove());
-    setMarkers([]);
-  };
-
   useEffect(() => {
     if (!mapReady || !map.current) return;
 
+    let isCancelled = false;
     const dataToPlot = isFilterActive ? filteredDestinations : allDestinations;
-    if (!Array.isArray(dataToPlot) || dataToPlot.length === 0) {
-      clearMarkers();
-      return;
-    }
 
-    async function addMarkers() {
-      clearMarkers();
+    // Clear all existing markers immediately
+    setMarkers((prevMarkers) => {
+      prevMarkers.forEach((m) => m.remove());
+      return [];
+    });
+
+    async function updateMarkers() {
+      if (!Array.isArray(dataToPlot) || dataToPlot.length === 0) {
+        return;
+      }
 
       const newMarkers: mapboxgl.Marker[] = [];
       const orgs = Array.isArray(dataToPlot) ? dataToPlot : [];
 
       for (const org of orgs) {
+        if (isCancelled) break; // Stop if effect was cleaned up
         if (!org.street_address) continue;
 
         const coords = await geocodeAddress(org.street_address, org.borough);
+        if (isCancelled) break; // Check again after async operation
         if (!coords) continue;
 
         const popupHTML = `
@@ -233,6 +235,12 @@ export default function Map({
           map.current!
         );
 
+        if (isCancelled) {
+          // Clean up marker if effect was cancelled
+          m.remove();
+          break;
+        }
+
         const markerElement = m.getElement();
 
         markerElement.style.cursor = "pointer";
@@ -255,10 +263,21 @@ export default function Map({
         newMarkers.push(m);
       }
 
-      setMarkers(newMarkers);
+      if (!isCancelled) {
+        setMarkers(newMarkers);
+      }
     }
 
-    addMarkers();
+    updateMarkers();
+
+    // Cleanup function to cancel ongoing operations and remove any markers
+    return () => {
+      isCancelled = true;
+      setMarkers((prevMarkers) => {
+        prevMarkers.forEach((m) => m.remove());
+        return [];
+      });
+    };
   }, [
     mapReady,
     isFilterActive,
