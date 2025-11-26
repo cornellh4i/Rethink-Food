@@ -27,7 +27,7 @@ export type Organization = {
 };
 
 function HomeContent() {
-  const { isFilterActive, closeSidebar } = useFilter();
+  const { isFilterActive, closeSidebar, allDestinations } = useFilter();
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
 
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -56,6 +56,20 @@ function HomeContent() {
   useEffect(() => {
     setSelectedOrg(null);
   }, [isFilterActive]);
+
+  const handleCBOIdSelect = (cboId: number) => {
+    const fullCBOOrg = allDestinations.find(org => org.id === cboId);
+    if (fullCBOOrg) {
+      setSelectedOrg(fullCBOOrg);
+    }
+  };
+
+  const handleRestaurantIdSelect = (restaurantId: number) => {
+    const fullRestaurantOrg = allDestinations.find(org => org.id === restaurantId);
+    if (fullRestaurantOrg) {
+      setSelectedOrg(fullRestaurantOrg);
+    }
+  };
 
   return (
     <div className="flex h-screen overflow-hidden relative">
@@ -92,6 +106,8 @@ function HomeContent() {
             <OrganizationDetailPopup
               org={selectedOrg}
               onClose={() => setSelectedOrg(null)}
+              onCBOIdSelect={handleCBOIdSelect}
+              onRestaurantIdSelect={handleRestaurantIdSelect}
             />
           </div>
         )}
