@@ -19,8 +19,6 @@ export default function OrgList({
     }
   }, [filteredDestinations]);
 
-  const getDummyProgress = () => 60;
-
   const parseCBOCuisinePreferences = (cuisinePreference?: string): string[] => {
     if (!cuisinePreference) return [];
     return cuisinePreference.split(';').map(c => c.trim()).filter(c => c.length > 0);
@@ -129,12 +127,13 @@ export default function OrgList({
                 </p>
 
                 <div className="flex gap-2 flex-wrap">
+                  {/* Meals served - BLUE for service */}
                   {org.number_of_meals != null &&
                     org.number_of_meals > 0 &&
                     org.number_of_meals >= 100 && (
                       <span
-                        className="px-3 py-1 rounded-full text-xs text-black"
-                        style={{ backgroundColor: "#E6E6E6" }}
+                        className="px-3 py-1 rounded-full text-xs"
+                        style={{ backgroundColor: '#C5F1FF', color: '#333' }}
                       >
                         {org.number_of_meals >= 1000
                           ? "1000+ meals served"
@@ -143,14 +142,15 @@ export default function OrgList({
                           : "100+ meals served"}
                       </span>
                     )}
+                  {/* Cuisine - GREEN for food */}
                   {restaurantData?.cuisine &&
                     restaurantData.cuisine
                       .split(",")
                       .map((cuisine: string, index: number) => (
                         <span
                           key={index}
-                          className="px-3 py-1 rounded-full text-xs text-black"
-                          style={{ backgroundColor: "#E6E6E6" }}
+                          className="px-3 py-1 rounded-full text-xs"
+                          style={{ backgroundColor: '#B6F3C7', color: '#333' }}
                         >
                           {cuisine.trim()}
                         </span>
@@ -178,55 +178,34 @@ export default function OrgList({
               {/* Chips */}
               {isCBO && (
                 <div className="flex gap-2 flex-wrap mt-2">
-                  {/* Cuisine Preferences chips (semicolon-separated) */}
+                  {/* Cuisine Preferences chips - GREEN for food */}
                   {cboMap[org.id]?.cuisine_preference && 
                     parseCBOCuisinePreferences(cboMap[org.id].cuisine_preference).map((cuisine, idx) => (
-                      <span key={`cuisine-pref-${idx}`} className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
+                      <span key={`cuisine-pref-${idx}`} className="px-3 py-1 rounded-full text-xs" style={{ backgroundColor: '#B6F3C7', color: '#333' }}>
                         {cuisine}
                       </span>
                     ))}
 
-                  {/* Meal Format chip */}
+                  {/* Meal Format chip - GREEN for food */}
                   {cboMap[org.id]?.meal_format && (
-                    <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
+                    <span className="px-3 py-1 rounded-full text-xs" style={{ backgroundColor: '#B6F3C7', color: '#333' }}>
                       {cboMap[org.id].meal_format}
                     </span>
                   )}
 
-                  {/* Serves Youth (0-18) - only if program_serving_minors or serves_minors is true */}
+                  {/* Serves Youth - BLUE for service */}
                   {(cboMap[org.id]?.program_serving_minors === true || cboMap[org.id]?.serves_minors === true) && (
-                    <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
-                      Serves Youth (0–18)
+                    <span className="px-3 py-1 rounded-full text-xs" style={{ backgroundColor: '#C5F1FF', color: '#333' }}>
+                      Serves Youth
                     </span>
                   )}
 
-                  {/* Open Distribution - only if open_distribution is true */}
+                  {/* Open Distribution - BLUE for service */}
                   {cboMap[org.id]?.open_distribution === true && (
-                    <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
+                    <span className="px-3 py-1 rounded-full text-xs" style={{ backgroundColor: '#C5F1FF', color: '#333' }}>
                       Open Distribution
                     </span>
                   )}
-
-                  {/* Volunteer Opportunities - only if volunteer_opportunities is true */}
-                  {cboMap[org.id]?.volunteer_opportunities === true && (
-                    <span className="px-3 py-1 rounded-full text-xs text-black" style={{ backgroundColor: '#E6E6E6'}}>
-                      Volunteer Opportunities
-                    </span>
-                  )}
-                </div>
-              )}
-
-      
-
-              {/* CBO Progress Bar (dummy, 60-70% fill) */}
-              {isCBO && (
-                <div className="mt-3">
-                  <div className="w-full bg-gray-200 h-2 rounded-full">
-                    <div 
-                      className="bg-gray-600 h-2 rounded-full transition-all"
-                      style={{ width: `${getDummyProgress()}%` }}
-                    />
-                  </div>
                 </div>
               )}
             </button>

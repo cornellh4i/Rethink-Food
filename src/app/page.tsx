@@ -5,7 +5,6 @@ import OrgList from "../components/OrgList";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabaseClient";
 import { FilterProvider, useFilter } from "../context/FilterContext";
-import MetricBar from "@/components/MetricBar";
 import FilterBar from "@/components/FilterBar";
 import OrganizationDetailPopup from "@/components/OrganizationDetailPopup";
 
@@ -74,9 +73,7 @@ function HomeContent() {
 
   return (
     <div className="flex flex-col h-screen">
-      <MetricBar />
-
-      <div className="flex flex-1 overflow-hidden mt-[210px] md:mt-[110px] relative">
+      <div className="flex flex-1 overflow-hidden relative">
         {isFilterActive && (
           <div className="w-full md:w-1/4 md:min-w-[250px] md:max-w-[400px] border-r border-gray-300 overflow-y-auto bg-gray-50 z-20 absolute md:relative h-full md:h-auto left-0 top-0">
             <div className="p-4">
