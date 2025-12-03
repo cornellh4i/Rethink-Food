@@ -56,6 +56,7 @@ export default function RestaurantDetailPopup({
   }, []);
 
   const restaurantData = restaurantMap[restaurant.id];
+  console.log("restaurantdat", restaurant)
 
   useEffect(() => {
     const queryMealProviders = async () => {
@@ -64,6 +65,7 @@ export default function RestaurantDetailPopup({
           `/api/meal_providers?restaurant_id=${restaurant.id}`
         );
         const data = await res.json();
+        console.log(data)
         setConnectedCBOs(data.meal_providers);
       } catch (e) {
         console.log("error message:", e)
@@ -76,48 +78,71 @@ export default function RestaurantDetailPopup({
   return (
     <div className="w-full">
       <div>
-        <h2 className="text-black font-semibold mb-1" style={{ fontSize: '24px', lineHeight: '1.4' }}>
+        <h2
+          className="text-black font-semibold mb-1"
+          style={{ fontSize: "24px", lineHeight: "1.4" }}
+        >
           {restaurant.name}
         </h2>
-        <p className="text-black mb-1" style={{ fontSize: '16px', lineHeight: '1.4' }}>
-          {restaurantData?.restaurant_type ? restaurantData.restaurant_type + " Restaurant" : "Restaurant"} ·{" "}
-          {restaurant.borough}
+        <p
+          className="text-gray-500 mb-1 "
+          style={{ fontSize: "16px", lineHeight: "1.4" }}
+        >
+          {restaurantData?.restaurant_type
+            ? restaurantData.restaurant_type + " Restaurant"
+            : "Restaurant"}{" "}
+          · {restaurant.borough}
         </p>
+
+       
+
+        {/* Cuisine - GREEN for food */}
+        <div className="mt-4">
+          <h3 className="text-gray-600 mb-2 font-bold" style={{color: "#757575" }}>Food served</h3>
+          <div className="flex flex-wrap gap-2">
+            {restaurantData?.cuisine &&
+              restaurantData.cuisine
+                .split(",")
+                .map((cuisine: string, index: number) => (
+                  <span
+                    key={index}
+                    className="text-xs px-3 py-1 rounded-full"
+                    style={{ backgroundColor: "#B6F3C7", color: "#333" }}
+                  >
+                    {cuisine.trim()}
+                  </span>
+                ))}
+          </div>
+        </div>
+
+        <h3
+          className="font-bold text-gray-600 mt-4"
+          style={{ fontSize: "14px", color: "#757575" }}
+        >
+          Address
+        </h3>
+
         <p className="text-sm text-gray-600">
           {restaurant.street_address}, {restaurant.state}, {restaurant.zip}{" "}
         </p>
 
-        <div className="flex flex-wrap gap-2 mt-3">
-          {/* Meals served - BLUE for service */}
-          {restaurant.number_of_meals != null &&
-            restaurant.number_of_meals > 0 &&
-            restaurant.number_of_meals >= 100 && (
-              <span className="text-xs px-3 py-1 rounded-full" style={{ backgroundColor: '#C5F1FF', color: '#333' }}>
-                {restaurant.number_of_meals >= 1000
-                  ? "1000+ meals served"
-                  : restaurant.number_of_meals >= 500
-                  ? "500+ meals served"
-                  : "100+ meals served"}
-              </span>
-            )}
-          {/* Cuisine - GREEN for food */}
-          {restaurantData?.cuisine &&
-            restaurantData.cuisine
-              .split(",")
-              .map((cuisine: string, index: number) => (
-                <span
-                  key={index}
-                  className="text-xs px-3 py-1 rounded-full"
-                  style={{ backgroundColor: '#B6F3C7', color: '#333' }}
-                >
-                  {cuisine.trim()}
-                </span>
-              ))}
-        </div>
+        <h3
+          className="font-bold text-gray-600 mt-4"
+          style={{ fontSize: "14px", color: "#757575" }}
+        >
+          Website
+        </h3>
+
+        <p className="text-sm text-black underline cursor-pointer">
+          {restaurant.website}
+        </p>
 
         <div className="mt-6">
           {connectedCBOs && connectedCBOs.length > 0 && (
-            <h3 className="font-medium mb-3" style={{ fontSize: '14px', color: '#757575', fontWeight: 500 }}>
+            <h3
+              className="font-bold mb-3 text-gray-600"
+              style={{ fontSize: "14px", color: "#757575" }}
+            >
               Distribution Partners
             </h3>
           )}
@@ -140,7 +165,12 @@ export default function RestaurantDetailPopup({
                   }}
                 >
                   {/* CBO Name */}
-                  <h3 className="font-semibold mb-2" style={{ fontSize: '16px', lineHeight: '1.4' }}>{cbo.name}</h3>
+                  <h3
+                    className="font-semibold mb-2"
+                    style={{ fontSize: "16px", lineHeight: "1.4" }}
+                  >
+                    {cbo.name}
+                  </h3>
 
                   <div className="flex gap-2 flex-wrap">
                     {/* Cuisine Preference Chips - GREEN for food */}
@@ -148,7 +178,7 @@ export default function RestaurantDetailPopup({
                       <span
                         key={`cuisine-${idx}`}
                         className="px-3 py-1 rounded-full text-xs"
-                        style={{ backgroundColor: '#B6F3C7', color: '#333' }}
+                        style={{ backgroundColor: "#B6F3C7", color: "#333" }}
                       >
                         {cuisine}
                       </span>
@@ -158,7 +188,7 @@ export default function RestaurantDetailPopup({
                     {cbo.meal_format && (
                       <span
                         className="px-3 py-1 rounded-full text-xs"
-                        style={{ backgroundColor: '#B6F3C7', color: '#333' }}
+                        style={{ backgroundColor: "#B6F3C7", color: "#333" }}
                       >
                         {cbo.meal_format}
                       </span>
@@ -168,7 +198,7 @@ export default function RestaurantDetailPopup({
                     {cbo.program_serving_minors && (
                       <span
                         className="px-3 py-1 rounded-full text-xs"
-                        style={{ backgroundColor: '#C5F1FF', color: '#333' }}
+                        style={{ backgroundColor: "#C5F1FF", color: "#333" }}
                       >
                         Serves Youth
                       </span>
@@ -178,7 +208,7 @@ export default function RestaurantDetailPopup({
                     {cbo.open_distribution && (
                       <span
                         className="px-3 py-1 rounded-full text-xs"
-                        style={{ backgroundColor: '#C5F1FF', color: '#333' }}
+                        style={{ backgroundColor: "#C5F1FF", color: "#333" }}
                       >
                         Open Distribution
                       </span>

@@ -102,7 +102,7 @@ export default function CBODetailPopup({
                   : ">25% Below Poverty Line"}
               </span>
               <span
-                className="flex items-center justify-center w-4 h-4 rounded-full bg-gray-500 text-[#C5F1FF] text-[10px] font-bold cursor-pointer"
+                className="flex items-center justify-center w-4 h-4 rounded-xl bg-gray-500 text-[#C5F1FF] text-[10px] font-bold cursor-pointer"
                 onMouseEnter={() => setShowPovertyTooltip(true)}
                 onMouseLeave={() => setShowPovertyTooltip(false)}
               >
@@ -110,7 +110,7 @@ export default function CBODetailPopup({
               </span>
             </div>
             {showPovertyTooltip && (
-              <div className="absolute z-10 bg-white border border-gray-300 rounded shadow-lg p-2 text-xs text-gray-700 w-48 top-full mt-1">
+              <div className="absolute z-10 bg-white border border-gray-300 rounded shadow-lg p-3 text-sm text-gray-800 w-64 top-full mt-1 left-0">
                 Portion of community members living at or below the poverty line
               </div>
             )}
@@ -129,6 +129,7 @@ export default function CBODetailPopup({
         {dietaryRestrictions?.length > 0 &&
           dietaryRestrictions.map((restriction, index) => (
             <span
+              key={index}
               className="text-xs px-3 py-1 rounded-full"
               style={{ backgroundColor: "#B6F3C7", color: "#333" }}
             >
@@ -156,7 +157,7 @@ export default function CBODetailPopup({
                 </span>
               </div>
               {showDistributionTooltip && (
-                <div className="absolute z-10 bg-white border border-gray-300 rounded shadow-lg p-2 text-xs text-gray-700 w-48 top-full mt-1">
+                <div className="absolute z-10 bg-white border border-gray-300 rounded-xl shadow-lg p-2 text-sm text-gray-800 w-64 top-full mt-1 left-0">
                   {cboData.open_distribution === true
                     ? "Anyone can receive food"
                     : "Only eligible community members receive food"}
@@ -170,8 +171,8 @@ export default function CBODetailPopup({
       {cuisinePreferences.length > 0 && (
         <div className="mt-4">
           <h3
-            className="font-medium mb-2"
-            style={{ fontSize: "14px", color: "#757575", fontWeight: 500 }}
+            className="font-bold mb-2 text-gray-600"
+            style={{ fontSize: "14px", color: "#757575" }}
           >
             Food served
           </h3>
@@ -217,14 +218,12 @@ export default function CBODetailPopup({
         </div>
       )}
 
-
-
       {/* Address */}
       {(cbo.street_address || cbo.city || cbo.state || cbo.zip) && (
         <div className="mt-4">
           <h3
-            className="font-medium mb-2"
-            style={{ fontSize: "14px", color: "#757575", fontWeight: 500 }}
+            className="font-bold mb-2 text-gray-600"
+            style={{ fontSize: "14px", color: "#757575" }}
           >
             Address
           </h3>
@@ -240,8 +239,8 @@ export default function CBODetailPopup({
       {cbo.website && (
         <div className="mt-4">
           <h3
-            className="font-medium mb-2"
-            style={{ fontSize: "14px", color: "#757575", fontWeight: 500 }}
+            className="font-bold mb-2 text-gray-600"
+            style={{ fontSize: "14px", color: "#757575" }}
           >
             Website
           </h3>
@@ -260,8 +259,8 @@ export default function CBODetailPopup({
       {cbo.writeup && (
         <div className="mt-4">
           <h3
-            className="font-medium mb-2"
-            style={{ fontSize: "14px", color: "#757575", fontWeight: 500 }}
+            className="font-bold mb-2 text-gray-600"
+            style={{ fontSize: "14px", color: "#757575" }}
           >
             Mission & Partnership
           </h3>
