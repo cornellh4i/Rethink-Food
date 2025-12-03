@@ -210,58 +210,32 @@ export default function Map({
     if (!selectedOrg) {
       // No selection, show all organizations according to filter
       setVisibleOrgIds(null);
-      console.log("No selection - showing all pins");
       return;
     }
 
-    // Get the current filtered dataset to respect the active filter
-    const dataToCheck = isFilterActive ? filteredDestinations : allDestinations;
-    if (!dataToCheck || dataToCheck.length === 0) {
-      setVisibleOrgIds(null);
-      return;
-    }
-    const allowedIds = new Set(dataToCheck.map(org => Number(org.id)));
-
-    // Check if selected org is even in the current filter
-    // If not, clear the selection immediately (it's been filtered out)
-    if (!allowedIds.has(Number(selectedOrg.id))) {
-      console.log("Selected org filtered out, clearing selection");
-      setVisibleOrgIds(null);
-      if (onOrganizationSelect) {
-        onOrganizationSelect(null as any);
-      }
-      return;
-    }
-
-    // Wait for API data to load before filtering pins
+    // When an org is selected, show it and all its connections regardless of filter
     if (selectedOrg.org_type === "restaurant") {
       if (connectedCBOs.length > 0) {
         const connectedCBOIds = connectedCBOs.map(mp => Number(mp.cbo_id));
         const selectedId = Number(selectedOrg.id);
-        const visibleIds = [selectedId, ...connectedCBOIds].filter(id => allowedIds.has(id));
+        const visibleIds = [selectedId, ...connectedCBOIds];
         setVisibleOrgIds(new Set(visibleIds));
-        console.log("Restaurant selected - visible IDs (filtered):", visibleIds);
       } else {
         const selectedId = Number(selectedOrg.id);
-        const visibleIds = allowedIds.has(selectedId) ? [selectedId] : [];
-        setVisibleOrgIds(new Set(visibleIds));
-        console.log("Restaurant selected - waiting for connections, showing only:", visibleIds);
+        setVisibleOrgIds(new Set([selectedId]));
       }
     } else if (selectedOrg.org_type === "cbo") {
       if (connectedRestaurants.length > 0) {
         const connectedRestaurantIds = connectedRestaurants.map(mp => Number(mp.restaurant_id));
         const selectedId = Number(selectedOrg.id);
-        const visibleIds = [selectedId, ...connectedRestaurantIds].filter(id => allowedIds.has(id));
+        const visibleIds = [selectedId, ...connectedRestaurantIds];
         setVisibleOrgIds(new Set(visibleIds));
-        console.log("CBO selected - visible IDs (filtered):", visibleIds);
       } else {
         const selectedId = Number(selectedOrg.id);
-        const visibleIds = allowedIds.has(selectedId) ? [selectedId] : [];
-        setVisibleOrgIds(new Set(visibleIds));
-        console.log("CBO selected - waiting for connections, showing only:", visibleIds);
+        setVisibleOrgIds(new Set([selectedId]));
       }
     }
-  }, [selectedOrg, connectedCBOs, connectedRestaurants, isFilterActive, filteredDestinations, allDestinations]);
+  }, [selectedOrg, connectedCBOs, connectedRestaurants]);
 
   // Clear selection-based visibility whenever the filter changes
   useEffect(() => {
@@ -274,7 +248,9 @@ export default function Map({
   useEffect(() => {
     if (!mapReady || !map.current) return;
 
-    const dataToPlot = isFilterActive ? filteredDestinations : allDestinations;
+    // When an org is selected, use allDestinations to ensure connected orgs are available
+    // Otherwise, respect the filter
+    const dataToPlot = visibleOrgIds !== null ? allDestinations : (isFilterActive ? filteredDestinations : allDestinations);
     if (!Array.isArray(dataToPlot) || dataToPlot.length === 0) {
       clearMarkers();
       return;
@@ -571,8 +547,8 @@ export default function Map({
       const shadowPaths = paths.map(p => ({
         ...p,
         path: p.path.map(([x, y]) => {
-          const offsetLng = 0.00003; 
-          const offsetLat = -0.00003; 
+          const offsetLng = 0.00001; 
+          const offsetLat = -0.00001; 
           return [x + offsetLng, y + offsetLat] as [number, number];
         })
       }));
