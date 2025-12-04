@@ -91,7 +91,7 @@ export default function FilterBar({ onOrganizationSelect }: { onOrganizationSele
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search..."
-            className="pl-10 pr-6 py-3 rounded-full bg-[#E3E3E3] text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 min-w-[300px]"            />
+            className="pl-10 pr-6 py-3 rounded-full bg-[#E3E3E3] text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 min-w-[338px]"            />
             <FontAwesomeIcon
               icon={faSearch}
               className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"

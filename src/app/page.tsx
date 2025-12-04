@@ -76,13 +76,13 @@ function HomeContent() {
       {isFilterActive && (
         <div className="w-full md:w-1/4 md:min-w-[250px] md:max-w-[400px] border-r border-gray-300 overflow-y-auto bg-gray-50 z-20 absolute md:relative h-full md:h-auto left-0 top-0">
           {/* Close button for sidebar */}
-          <button
+          {/* <button
             onClick={closeSidebar}
             className="absolute top-4 right-4 p-2 hover:bg-gray-200 rounded-lg transition-colors z-50"
             aria-label="Close sidebar"
           >
             <img src="/close_sidebar.png" alt="Close sidebar" className="w-5 h-5" />
-          </button>
+          </button> */}
           
           {/* Content starts below the FilterBar - FilterBar height + padding */}
           <div className="p-4" style={{ paddingTop: '100px' }}>
