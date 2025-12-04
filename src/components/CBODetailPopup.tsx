@@ -1,18 +1,16 @@
-'use client';
+"use client";
 import { useState, useEffect } from "react";
 import { Organization } from "@/app/page";
 
-export default function CBODetailPopup({ 
-  cbo, 
+export default function CBODetailPopup({
+  cbo,
   cboData,
-  onRestaurantClick
-}: { 
+  onRestaurantClick,
+}: {
   cbo: Organization;
   cboData?: any;
   onRestaurantClick?: (restaurantId: number) => void;
 }) {
-  const [activeTab, setActiveTab] = useState<"how-it-works" | "who-we-serve">("how-it-works");
-
   interface MealProvider {
     id: number;
     cbo_id: number;
@@ -28,14 +26,16 @@ export default function CBODetailPopup({
     number_of_meals: number | null;
   }
 
-  const [connectedRestaurants, setConnectedRestaurants] = useState<MealProvider[]>([]);
+  const [connectedRestaurants, setConnectedRestaurants] = useState<
+    MealProvider[]
+  >([]);
+  const [showPovertyTooltip, setShowPovertyTooltip] = useState(false);
+  const [showDistributionTooltip, setShowDistributionTooltip] = useState(false);
 
   useEffect(() => {
     const queryMealProviders = async () => {
       try {
-        const res = await fetch(
-          `/api/meal_providers?cbo_id=${cbo.id}`
-        );
+        const res = await fetch(`/api/meal_providers?cbo_id=${cbo.id}`);
         const data = await res.json();
         setConnectedRestaurants(data.meal_providers || []);
       } catch (e) {
@@ -47,74 +47,170 @@ export default function CBODetailPopup({
   }, [cbo.id]);
 
   const cuisinePreferences: string[] = cboData?.cuisine_preference
-    ? cboData.cuisine_preference.split(';').map((c: string) => c.trim()).filter((c: string) => c.length > 0)
+    ? cboData.cuisine_preference
+        .split(";")
+        .map((c: string) => c.trim())
+        .filter((c: string) => c.length > 0)
     : [];
 
-  const progressPercentage = 60;
+  const servesMinors =
+    cboData?.program_serving_minors != null
+      ? cboData?.program_serving_minors === true 
+      : undefined;
 
-  const formatBudget = (amount?: number) => {
-    if (!amount) return '';
-    return `$${amount.toLocaleString()}`;
-  };
+  const povertyLine =
+    cboData?.percent_below_poverty_served != null
+      ? cboData?.percent_below_poverty_served
+      : undefined;
 
-  const servesMinors = cboData?.program_serving_minors === true || cboData?.serves_minors === true;
+  const dietaryRestrictions = cuisinePreferences
+    .filter((c) => c.includes("Halal") || c.includes("Kosher"))
+    .map((c) => {
+      if (c.includes("Halal")) return "Halal";
+      if (c.includes("Kosher")) return "Kosher";
+      return c;
+    })
+    .filter((value, index, self) => self.indexOf(value) === index); 
+
 
   return (
     <div className="w-full">
-      <div className="h-42 bg-gray-300 -m-4 mb-4" />
-
       {/* Header */}
-      <h2 className="text-xl text-black font-semibold">{cbo.name}</h2>
-      <p className="text-xs text-black">Community Based Organization · {cbo.borough || 'Brooklyn'}</p>
+      <h2
+        className="text-black font-semibold"
+        style={{ fontSize: "24px", lineHeight: "1.4" }}
+      >
+        {cbo.name}
+      </h2>
+      <p
+        className="text-gray-500 text-sm"
+        style={{ fontSize: "16px", lineHeight: "1.4" }}
+      >
+        Community-Based Org · {cbo.borough || "Brooklyn"}
+      </p>
 
-      {/* Chips */}
-      <div className="flex flex-wrap gap-2 mt-3">
-        {/* Cuisine Preferences chips */}
-        {cuisinePreferences.map((cuisine: string, index: number) => (
-          <span key={`cuisine-${index}`} className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full">
-            {cuisine}
-          </span>
-        ))}
+      {/* top section #C5F1FF */}
 
-        {/* Meal Format chip */}
-        {cboData?.meal_format && (
-          <span className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full">
-            {cboData.meal_format}
+      <div className="flex flex-row gap-2 mt-2">
+        {povertyLine != null && povertyLine > 25 && (
+          <div className="relative">
+            <div className="flex flex-row items-center gap-1 text-xs px-3 py-1 rounded-full bg-[#C5F1FF] text-[#333]">
+              <span>
+                {povertyLine > 75
+                  ? ">75% Below Poverty Line"
+                  : povertyLine > 50
+                  ? ">50% Below Poverty Line"
+                  : ">25% Below Poverty Line"}
+              </span>
+              <span
+                className="flex items-center justify-center w-4 h-4 rounded-xl bg-gray-500 text-[#C5F1FF] text-[10px] font-bold cursor-pointer"
+                onMouseEnter={() => setShowPovertyTooltip(true)}
+                onMouseLeave={() => setShowPovertyTooltip(false)}
+              >
+                ?
+              </span>
+            </div>
+            {showPovertyTooltip && (
+              <div className="absolute z-10 bg-white border border-gray-300 rounded shadow-lg p-3 text-sm text-gray-800 w-64 top-full mt-1 left-0">
+                Portion of community members living at or below the poverty line
+              </div>
+            )}
+          </div>
+        )}
+
+        {servesMinors != undefined && servesMinors == true && (
+          <span
+            className="text-xs px-3 py-1 rounded-full"
+            style={{ backgroundColor: "#C5F1FF", color: "#333" }}
+          >
+            Serves Youth
           </span>
         )}
 
-        {/* Serves Youth (0-18) - only if program_serving_minors or serves_minors is true */}
-        {servesMinors && (
-          <span className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full">
-            Serves Youth (0–18)
-          </span>
-        )}
+        {dietaryRestrictions?.length > 0 &&
+          dietaryRestrictions.map((restriction, index) => (
+            <span
+              key={index}
+              className="text-xs px-3 py-1 rounded-full"
+              style={{ backgroundColor: "#B6F3C7", color: "#333" }}
+            >
+              {restriction}
+            </span>
+          ))}
 
-        {/* Open Distribution - only if open_distribution is true */}
-        {cboData?.open_distribution && (
-          <span className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full">
-            Open Distribution
-          </span>
-        )}
-
-        {/* Volunteer Opportunities - only if volunteer_opportunities is true */}
-        {cboData?.volunteer_opportunities && (
-          <span className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full">
-            Volunteer Opportunities
-          </span>
-        )}
+        {cboData?.open_distribution != null &&
+          (povertyLine == undefined || povertyLine < 25) &&
+          dietaryRestrictions.length === 0 &&
+          (servesMinors == undefined || servesMinors === false) && (
+            <div className="relative">
+              <div className="flex flex-row items-center gap-1 text-xs px-3 py-1 rounded-full bg-[#C5F1FF] text-[#333]">
+                <span>
+                  {cboData.open_distribution === true
+                    ? "Open Distribution"
+                    : "Selective Distribution"}
+                </span>
+                <span
+                  className="flex items-center justify-center w-4 h-4 rounded-full bg-gray-500 text-[#C5F1FF] text-[10px] font-bold cursor-pointer"
+                  onMouseEnter={() => setShowDistributionTooltip(true)}
+                  onMouseLeave={() => setShowDistributionTooltip(false)}
+                >
+                  ?
+                </span>
+              </div>
+              {showDistributionTooltip && (
+                <div className="absolute z-10 bg-white border border-gray-300 rounded-xl shadow-lg p-2 text-sm text-gray-800 w-64 top-full mt-1 left-0">
+                  {cboData.open_distribution === true
+                    ? "Anyone can receive food"
+                    : "Only eligible community members receive food"}
+                </div>
+              )}
+            </div>
+          )}
       </div>
+
+      {/* Food served section  */}
+      {cuisinePreferences.length > 0 && (
+        <div className="mt-4">
+          <h3
+            className="font-bold mb-2 text-gray-600"
+            style={{ fontSize: "14px", color: "#757575" }}
+          >
+            Food served
+          </h3>
+          <div className="flex flex-wrap gap-1">
+            {cuisinePreferences.map((cuisine: string, index: number) => (
+              <span
+                key={`cuisine-${index}`}
+                className="text-xs px-3 py-1 rounded-full"
+                style={{ backgroundColor: "#B6F3C7", color: "#333" }}
+              >
+                {cuisine}
+              </span>
+            ))}
+            {cboData?.meal_format && 
+             cboData.meal_format !== "Hot IMs" && 
+             cboData.meal_format !== "Cold IMs" && (
+              <span
+                className="text-xs px-3 py-1 rounded-full"
+                style={{ backgroundColor: "#B6F3C7", color: "#333" }}
+              >
+                {cboData.meal_format}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Meals Provided By Section */}
       {connectedRestaurants && connectedRestaurants.length > 0 && (
         <div className="mt-4">
-          <p className="text-xs text-gray-600">
+          <p className="text-sm text-gray-700">
             Provided by{" "}
             {connectedRestaurants.map((provider, index) => (
               <span key={index}>
                 <span
                   onClick={() => onRestaurantClick?.(provider.restaurant.id)}
-                  className="text-black hover:underline cursor-pointer"
+                  className="text-black font-bold hover:underline cursor-pointer"
                 >
                   {provider.restaurant.name}
                 </span>
@@ -125,168 +221,55 @@ export default function CBODetailPopup({
         </div>
       )}
 
-      {/* Computed fields */}
-      <div className="mt-4">
-        {/* Meals per week  */}
-        <div>
-          <p className="text-2xl font-bold text-black">
-            {(cbo.number_of_meals !== undefined && cbo.number_of_meals !== null) ? cbo.number_of_meals : '—'}
+      {/* Address */}
+      {(cbo.street_address || cbo.city || cbo.state || cbo.zip) && (
+        <div className="mt-4">
+          <h3
+            className="font-bold mb-2 text-gray-600"
+            style={{ fontSize: "14px", color: "#757575" }}
+          >
+            Address
+          </h3>
+          <p className="text-sm text-gray-700">
+            {[cbo.street_address, cbo.city, cbo.state, cbo.zip]
+              .filter(Boolean)
+              .join(", ")}
           </p>
-          <p className="text-sm text-gray-500">Meals per Week</p>
         </div>
+      )}
 
-        {/* Dummy progress bar */}
-        <div className="mt-2 mb-2">
-          <div className="w-full bg-gray-200 h-2 rounded-full">
-            <div
-              className="bg-gray-600 h-2 rounded-full transition-all"
-              style={{ width: `${progressPercentage}%` }}
-            />
-          </div>
+      {/* Website */}
+      {cbo.website && (
+        <div className="mt-4">
+          <h3
+            className="font-bold mb-2 text-gray-600"
+            style={{ fontSize: "14px", color: "#757575" }}
+          >
+            Website
+          </h3>
+          <a
+            href={cbo.website}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-black underline hover:text-black text-sm break-all"
+          >
+            {cbo.website}
+          </a>
         </div>
+      )}
 
-        {/* Annual Budget Goal */}
-        {cboData?.annual_funding_goal && (
-          <p className="text-sm text-gray-500 mb-4">
-            Annual Budget Goal: {formatBudget(cboData.annual_funding_goal)}
-          </p>
-        )}
-      </div>
-
-      {/* Support button */}
-      <button className="mt-4 w-full bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 rounded-lg">
-        Support this organization
-      </button>
-
-      {/* Toggleable tabs */}
-      <div className="mt-6 flex border-b border-gray-200">
-        <button
-          onClick={() => setActiveTab("how-it-works")}
-          className={`flex-1 py-2 text-sm ${
-            activeTab === "how-it-works"
-              ? "border-b-2 border-gray-600 text-gray-600 font-semibold"
-              : "text-gray-500"
-          }`}
-        >
-          How It Works
-        </button>
-        <button
-          onClick={() => setActiveTab("who-we-serve")}
-          className={`flex-1 py-2 text-sm ${
-            activeTab === "who-we-serve"
-              ? "border-b-2 border-gray-600 text-gray-600 font-semibold"
-              : "text-gray-500"
-          }`}
-        >
-          Who We Serve
-        </button>
-      </div>
-
-      {/* Tab content */}
-      <div className="mt-4 text-xs text-gray-700 leading-relaxed">
-        {activeTab === "how-it-works" && (
-          <div className="space-y-4">
-            {/* Mission section */}
-            {cbo.writeup && (
-              <div>
-                <h3 className="font-semibold text-sm text-black mb-2">Mission</h3>
-                <p>{cbo.writeup}</p>
-              </div>
-            )}
-
-            {/* Food Served - reuse Cuisine Preferences */}
-            {cuisinePreferences.length > 0 && (
-              <div>
-                <h3 className="font-semibold text-sm text-black mb-2">Food served</h3>
-                <div className="flex flex-wrap gap-2">
-                  {cuisinePreferences.map((cuisine: string, index: number) => (
-                    <span key={`food-${index}`} className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full">
-                      {cuisine}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Distribution */}
-            <div>
-              <h3 className="font-semibold text-sm text-black mb-2">Distribution</h3>
-              {cboData?.open_distribution && (
-                <span className="bg-gray-100 text-black text-xs px-3 py-1 rounded-full inline-block mb-2">
-                  Open Distribution
-                </span>
-              )}
-              {(cbo.street_address || cbo.city || cbo.state || cbo.zip) && (
-                <p className="text-xs mt-2">
-                  {[cbo.street_address, cbo.city, cbo.state, cbo.zip].filter(Boolean).join(', ')}
-                </p>
-              )}
-            </div>
-
-            {/* Learn More */}
-            {cbo.website && (
-              <div>
-                <h3 className="font-semibold text-sm text-black mb-2">Learn More</h3>
-                <a
-                  href={cbo.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800 underline"
-                >
-                  {cbo.website}
-                </a>
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === "who-we-serve" && (
-          <div className="space-y-4">
-            <p className="text-xs text-gray-600">
-              This data reflects everyone served by this organization, not only meal recipients.
-            </p>
-
-            {/* Poverty Line - dummy data */}
-            <div>
-              <h3 className="font-semibold text-sm text-black mb-2">Poverty Line</h3>
-              <div className="space-y-1 text-xs">
-                <div className="flex items-center gap-2">
-                  <div className="w-full bg-gray-200 h-4 rounded">
-                    <div className="bg-gray-600 h-4 rounded" style={{ width: '30%' }}></div>
-                  </div>
-                  <span>30%</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Age - dummy data */}
-            <div>
-              <h3 className="font-semibold text-sm text-black mb-2">Age</h3>
-              <div className="space-y-1 text-xs">
-                <div className="flex items-center gap-2">
-                  <div className="w-full bg-gray-200 h-4 rounded">
-                    <div className="bg-gray-600 h-4 rounded" style={{ width: '40%' }}></div>
-                  </div>
-                  <span>40%</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Race - dummy data */}
-            <div>
-              <h3 className="font-semibold text-sm text-black mb-2">Race</h3>
-              <div className="space-y-1 text-xs">
-                <div className="flex items-center gap-2">
-                  <div className="w-full bg-gray-200 h-4 rounded">
-                    <div className="bg-gray-600 h-4 rounded" style={{ width: '50%' }}></div>
-                  </div>
-                  <span>50%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Mission & Partnership */}
+      {cbo.writeup && (
+        <div className="mt-4">
+          <h3
+            className="font-bold mb-2 text-gray-600"
+            style={{ fontSize: "14px", color: "#757575" }}
+          >
+            Mission & Partnership
+          </h3>
+          <p className="text-sm text-gray-700 leading-relaxed">{cbo.writeup}</p>
+        </div>
+      )}
     </div>
   );
 }

@@ -147,13 +147,24 @@ export default function Map({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const deckOverlay = useRef<MapboxOverlay | null>(null);
+  const markersRef = useRef<mapboxgl.Marker[]>([]); // Use ref to track markers synchronously
+  const hqMarkerRef = useRef<mapboxgl.Marker | null>(null); // Track HQ marker separately
 
   const { filteredDestinations, allDestinations, isFilterActive } = useFilter();
 
+  const [mounted, setMounted] = useState<boolean>(false);
   const [mapReady, setMapReady] = useState<boolean>(false);
   const [markers, setMarkers] = useState<mapboxgl.Marker[]>([]);
   const [connectedCBOs, setConnectedCBOs] = useState<MealProvider[]>([]);
   const [connectedRestaurants, setConnectedRestaurants] = useState<MealProvider[]>([]);
+
+  // Track organizations that should be visible when a pin is selected
+  const [visibleOrgIds, setVisibleOrgIds] = useState<Set<number | string> | null>(null);
+
+  // Ensure component only renders after client-side hydration
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (map.current) return;
@@ -175,7 +186,8 @@ export default function Map({
 
       setMapReady(true);
 
-      new mapboxgl.Marker({ color: "#e63946" })
+      // Create and track HQ marker separately
+      hqMarkerRef.current = new mapboxgl.Marker({ color: "#e63946" })
         .setLngLat(DEFAULT_CENTER)
         .setPopup(
           new mapboxgl.Popup().setHTML(
@@ -186,33 +198,88 @@ export default function Map({
     });
   }, []);
 
+  const clearMarkers = () => {
+    // Use ref to ensure we clear ALL current markers
+    markersRef.current.forEach((m) => m.remove());
+    markersRef.current = [];
+    setMarkers([]);
+  };
+
+  // Determine which organizations should be visible based on selection
+  useEffect(() => {
+    if (!selectedOrg) {
+      // No selection, show all organizations according to filter
+      setVisibleOrgIds(null);
+      return;
+    }
+
+    // When an org is selected, show it and all its connections regardless of filter
+    if (selectedOrg.org_type === "restaurant") {
+      if (connectedCBOs.length > 0) {
+        const connectedCBOIds = connectedCBOs.map(mp => Number(mp.cbo_id));
+        const selectedId = Number(selectedOrg.id);
+        const visibleIds = [selectedId, ...connectedCBOIds];
+        setVisibleOrgIds(new Set(visibleIds));
+      } else {
+        const selectedId = Number(selectedOrg.id);
+        setVisibleOrgIds(new Set([selectedId]));
+      }
+    } else if (selectedOrg.org_type === "cbo") {
+      if (connectedRestaurants.length > 0) {
+        const connectedRestaurantIds = connectedRestaurants.map(mp => Number(mp.restaurant_id));
+        const selectedId = Number(selectedOrg.id);
+        const visibleIds = [selectedId, ...connectedRestaurantIds];
+        setVisibleOrgIds(new Set(visibleIds));
+      } else {
+        const selectedId = Number(selectedOrg.id);
+        setVisibleOrgIds(new Set([selectedId]));
+      }
+    }
+  }, [selectedOrg, connectedCBOs, connectedRestaurants]);
+
+  // Clear selection-based visibility whenever the filter changes
+  useEffect(() => {
+    setVisibleOrgIds(null);
+    if (onOrganizationSelect) {
+      onOrganizationSelect(null as any);
+    }
+  }, [filteredDestinations]);
+
   useEffect(() => {
     if (!mapReady || !map.current) return;
 
-    let isCancelled = false;
-    const dataToPlot = isFilterActive ? filteredDestinations : allDestinations;
+    // When an org is selected, use allDestinations to ensure connected orgs are available
+    // Otherwise, respect the filter
+    const dataToPlot = visibleOrgIds !== null ? allDestinations : (isFilterActive ? filteredDestinations : allDestinations);
+    if (!Array.isArray(dataToPlot) || dataToPlot.length === 0) {
+      clearMarkers();
+      return;
+    }
 
-    // Clear all existing markers immediately
-    setMarkers((prevMarkers) => {
-      prevMarkers.forEach((m) => m.remove());
-      return [];
-    });
+    let canceled = false;
 
-    async function updateMarkers() {
-      if (!Array.isArray(dataToPlot) || dataToPlot.length === 0) {
-        return;
-      }
+    async function addMarkers() {
+      clearMarkers();
 
       const newMarkers: mapboxgl.Marker[] = [];
       const orgs = Array.isArray(dataToPlot) ? dataToPlot : [];
 
+      const currentVisibleIds = visibleOrgIds;
+      console.log("Rendering markers. Visible IDs:", currentVisibleIds ? Array.from(currentVisibleIds) : "ALL");
+
       for (const org of orgs) {
-        if (isCancelled) break; // Stop if effect was cleaned up
+        if (canceled) return;
+
+        // Skip this marker if we have a selection and this org is not visible
+        if (currentVisibleIds !== null && !currentVisibleIds.has(Number(org.id))) {
+          continue;
+        }
+
         if (!org.street_address) continue;
 
         const coords = await geocodeAddress(org.street_address, org.borough);
-        if (isCancelled) break; // Check again after async operation
-        if (!coords) continue;
+        // Check again after async operation
+        if (!coords || canceled) continue;
 
         const popupHTML = `
           <div style="font-family: sans-serif; font-size: 13px;">
@@ -235,25 +302,46 @@ export default function Map({
           map.current!
         );
 
-        if (isCancelled) {
-          // Clean up marker if effect was cancelled
+        // Check again after async marker creation
+        if (canceled) {
           m.remove();
-          break;
+          return;
         }
 
         const markerElement = m.getElement();
 
         markerElement.style.cursor = "pointer";
 
+        let popupTimeout: NodeJS.Timeout | null = null;
+
         markerElement.addEventListener("mouseenter", () => {
+          // Don't show popup if this org is currently selected
+          if (selectedOrg && selectedOrg.id === org.id) {
+            return;
+          }
+
+          // Clear any pending removal
+          if (popupTimeout) {
+            clearTimeout(popupTimeout);
+            popupTimeout = null;
+          }
           popup.setLngLat(coords as [number, number]).addTo(map.current!);
         });
 
         markerElement.addEventListener("mouseleave", () => {
-          popup.remove();
+          // Add a small delay before removing to prevent flickering
+          popupTimeout = setTimeout(() => {
+            popup.remove();
+            popupTimeout = null;
+          }, 100);
         });
 
         markerElement.addEventListener("click", () => {
+          // Clear any pending removal and remove popup immediately
+          if (popupTimeout) {
+            clearTimeout(popupTimeout);
+            popupTimeout = null;
+          }
           popup.remove();
           if (onOrganizationSelect) {
             onOrganizationSelect(org);
@@ -263,20 +351,20 @@ export default function Map({
         newMarkers.push(m);
       }
 
-      if (!isCancelled) {
-        setMarkers(newMarkers);
-      }
+      // Final check before committing markers
+      if (canceled) return;
+
+      // Update both ref and state
+      markersRef.current = newMarkers;
+      setMarkers(newMarkers);
     }
 
-    updateMarkers();
+    addMarkers();
 
-    // Cleanup function to cancel ongoing operations and remove any markers
+    // Cleanup function clear markers
     return () => {
-      isCancelled = true;
-      setMarkers((prevMarkers) => {
-        prevMarkers.forEach((m) => m.remove());
-        return [];
-      });
+      canceled = true;
+      clearMarkers();
     };
   }, [
     mapReady,
@@ -284,6 +372,7 @@ export default function Map({
     filteredDestinations,
     allDestinations,
     onOrganizationSelect,
+    visibleOrgIds,
   ]);
 
   useEffect(() => {
@@ -377,6 +466,12 @@ export default function Map({
         cboName: string;
       }[] = [];
 
+      // Determine arrow color based on selection type
+      const isRestaurantSelected = selectedOrg.org_type === "restaurant";
+      const arrowColor: [number, number, number, number] = isRestaurantSelected 
+        ? [0, 220, 125, 255] // #00DC7D - Green for restaurant selection
+        : [121, 191, 218, 255]; // #79BFDA - Blue for CBO selection
+
       // Handle Restaurant → CBO arrows (when restaurant is selected)
       if (selectedOrg.org_type === "restaurant" && connectedCBOs.length > 0) {
         const restaurantCoords = await geocodeAddress(
@@ -448,11 +543,35 @@ export default function Map({
         return;
       }
 
+      // Create shadow paths
+      const shadowPaths = paths.map(p => ({
+        ...p,
+        path: p.path.map(([x, y]) => {
+          const offsetLng = 0.00001; 
+          const offsetLat = -0.00001; 
+          return [x + offsetLng, y + offsetLat] as [number, number];
+        })
+      }));
+
+      // Create shadow layer (duplicate layer with blur effect)
+      const shadowLayer = new PathLayer({
+        id: "arrow-shadow",
+        data: shadowPaths,
+        getPath: (d: any) => d.path,
+        getColor: [0, 0, 0, 30], 
+        widthUnits: "pixels",
+        getWidth: 3, 
+        rounded: true,
+        capRounded: true,
+        pickable: false,
+      });
+
+      // Create main arrow layer
       const pathLayer = new PathLayer({
         id: "restaurant-cbo-paths",
         data: paths,
         getPath: (d: any) => d.path,
-        getColor: [34, 197, 94, 180], // green to match Figma
+        getColor: arrowColor,
         widthUnits: "pixels",
         getWidth: 3,
         rounded: true,
@@ -460,7 +579,7 @@ export default function Map({
         pickable: false,
       });
 
-      deckOverlay.current!.setProps({ layers: [pathLayer] });
+      deckOverlay.current!.setProps({ layers: [shadowLayer, pathLayer] });
     };
 
     createPaths();
