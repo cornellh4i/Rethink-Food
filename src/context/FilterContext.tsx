@@ -6,10 +6,15 @@ interface FilterContextType {
   filteredDestinations: any[] | undefined;
   setFilteredDestinations: React.Dispatch<React.SetStateAction<any[] | undefined>>;
   isFilterActive: boolean;
+  setIsFilterActive: React.Dispatch<React.SetStateAction<boolean>>;
   applyFilter: (key: string) => void;
   resetFilters: () => void;
   closeSidebar: () => void;
   allDestinations: any[];
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  selectedBoroughs: string[];
+  selectedType: "Restaurant" | "CBO" | null;
 }
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
@@ -20,8 +25,10 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [filteredDestinations, setFilteredDestinations] = useState<any[] | undefined>(undefined);
   const [isFilterActive, setIsFilterActive] = useState(false);
 
-  const [selectedBorough, setSelectedBorough] = useState<string | null>(null);
+  const [selectedBoroughs, setSelectedBoroughs] = useState<string[]>([]);
   const [selectedType, setSelectedType] = useState<"Restaurant" | "CBO" | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  
   const closeSidebar = () => { setIsFilterActive(false); };
   
 
@@ -75,44 +82,71 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     fetchData();
   }, []);
 
+  // Don't auto-filter on search anymore - search will show dropdown instead
+  useEffect(() => {
+    filterData(selectedBoroughs, selectedType, "");
+  }, [selectedBoroughs, selectedType, allDestinations]);
+
   const applyFilter = (key: string) => {
     setIsFilterActive(true);
 
-    // Handle selecting borough
-    if (["Bronx", "Brooklyn", "Manhattan", "Queens", "Staten Island"].includes(key)) {
-      const newBorough = selectedBorough === key ? null : key;
-      setSelectedBorough(newBorough);
-      filterData(newBorough, selectedType);
+    // Handle selecting borough - toggle in array
+    if (["Bronx", "Brooklyn", "Manhattan", "Queens", "Staten Island","Miami"].includes(key)) {
+      const newBoroughs = selectedBoroughs.includes(key)
+        ? selectedBoroughs.filter(b => b !== key)
+        : [...selectedBoroughs, key];
+      
+      setSelectedBoroughs(newBoroughs);
+      
+      // Auto-reset if all filters are deselected
+      if (newBoroughs.length === 0 && !selectedType && !searchQuery.trim()) {
+        setIsFilterActive(false);
+        setFilteredDestinations(allDestinations);
+        return;
+      }
+      
+      filterData(newBoroughs, selectedType);
       return;
     }
 
     // Handle selecting restaurants/CBOs
     if (key === "Resturant" || key === "CBOS") {
-      // only one can be active
       const newType =
-        selectedType === (key === "Resturant" ? "Restaurant" : "CBO") ? null : key === "Resturant" ? "Restaurant" : "CBO";
+        selectedType === (key === "Resturant" ? "Restaurant" : "CBO") 
+          ? null 
+          : key === "Resturant" ? "Restaurant" : "CBO";
+      
       setSelectedType(newType);
-      filterData(selectedBorough, newType);
+      
+      // Auto-reset if all filters are deselected
+      if (selectedBoroughs.length === 0 && !newType && !searchQuery.trim()) {
+        setIsFilterActive(false);
+        setFilteredDestinations(allDestinations);
+        return;
+      }
+      
+      filterData(selectedBoroughs, newType);
       return;
     }
 
     // Reset to all
     if (key === "All" || key === "Boroughs" || key === "All Boroughs") {
-      setSelectedBorough(null);
+      setSelectedBoroughs([]);
       setSelectedType(null);
       setFilters({});
+      setSearchQuery("");
       setFilteredDestinations(allDestinations);
       return;
     }
   };
 
-  const filterData = (borough: string | null, type: "Restaurant" | "CBO" | null) => {
+  const filterData = (boroughs: string[], type: "Restaurant" | "CBO" | null) => {
     if (!Array.isArray(allDestinations)) return;
 
     let filtered = [...allDestinations];
 
-    if (borough) {
-      filtered = filtered.filter((dest) => dest.borough === borough);
+    if (boroughs.length > 0) {
+      filtered = filtered.filter((dest) => boroughs.includes(dest.borough));
     }
 
     if (type) {
@@ -128,9 +162,10 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const resetFilters = () => {
-    setSelectedBorough(null);
+    setSelectedBoroughs([]);
     setSelectedType(null);
     setFilters({});
+    setSearchQuery("");
     setFilteredDestinations(allDestinations);
     setIsFilterActive(false);
   };
@@ -143,10 +178,15 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       filteredDestinations,
       setFilteredDestinations,
       isFilterActive,
+      setIsFilterActive,
       applyFilter,
       resetFilters,
       closeSidebar,
       allDestinations,
+      searchQuery,
+      setSearchQuery,
+      selectedBoroughs,
+      selectedType,
     }}
   >
     {children}
