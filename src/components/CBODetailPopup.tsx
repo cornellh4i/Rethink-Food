@@ -63,9 +63,15 @@ export default function CBODetailPopup({
       ? cboData?.percent_below_poverty_served
       : undefined;
 
-  const dietaryRestrictions = cuisinePreferences.filter(
-    (c) => c.includes("Halal") || c.includes("Kosher")
-  );
+  const dietaryRestrictions = cuisinePreferences
+    .filter((c) => c.includes("Halal") || c.includes("Kosher"))
+    .map((c) => {
+      if (c.includes("Halal")) return "Halal";
+      if (c.includes("Kosher")) return "Kosher";
+      return c;
+    })
+    .filter((value, index, self) => self.indexOf(value) === index); 
+  console.log(dietaryRestrictions)
 
   console.log("povertyLine:", povertyLine);
   console.log("dietaryRestrictions:", dietaryRestrictions);
