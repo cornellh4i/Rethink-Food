@@ -176,38 +176,47 @@ export default function OrgList({
             </p>
 
               {/* Chips */}
-              {isCBO && (
-                <div className="flex gap-2 flex-wrap mt-2">
-                  {/* Cuisine Preferences chips - GREEN for food */}
-                  {cboMap[org.id]?.cuisine_preference && 
-                    parseCBOCuisinePreferences(cboMap[org.id].cuisine_preference).map((cuisine, idx) => (
-                      <span key={`cuisine-pref-${idx}`} className="px-3 py-1 rounded-full text-xs" style={{ backgroundColor: '#B6F3C7', color: '#333' }}>
-                        {cuisine}
+              {isCBO && (() => {
+                const cboInfo = cboMap[org.id];
+                const povertyLine = cboInfo?.percent_below_poverty_served;
+                const servesMinors = cboInfo?.program_serving_minors === true || cboInfo?.serves_minors === true;
+                const cuisinePrefs = cboInfo?.cuisine_preference ? parseCBOCuisinePreferences(cboInfo.cuisine_preference) : [];
+                const dietaryRestrictions = cuisinePrefs.filter((c: string) => c.includes("Halal") || c.includes("Kosher"));
+
+                const hasPriorityTags = (povertyLine != null && povertyLine > 25) || servesMinors || dietaryRestrictions.length > 0;
+
+                return (
+                  <div className="flex gap-2 flex-wrap mt-2">
+                    {/* Priority 1: Poverty tags */}
+                    {povertyLine != null && povertyLine > 25 && (
+                      <span className="px-3 py-1 rounded-full text-xs" style={{ backgroundColor: '#C5F1FF', color: '#333' }}>
+                        {povertyLine > 75 ? ">75% Below Poverty Line" : povertyLine > 50 ? ">50% Below Poverty Line" : ">25% Below Poverty Line"}
+                      </span>
+                    )}
+
+                    {/* Priority 2: Serves Youth */}
+                    {servesMinors && (
+                      <span className="px-3 py-1 rounded-full text-xs" style={{ backgroundColor: '#C5F1FF', color: '#333' }}>
+                        Serves Youth
+                      </span>
+                    )}
+
+                    {/* Priority 3: Dietary Restrictions */}
+                    {dietaryRestrictions.map((restriction: string, idx: number) => (
+                      <span key={`dietary-${idx}`} className="px-3 py-1 rounded-full text-xs" style={{ backgroundColor: '#B6F3C7', color: '#333' }}>
+                        {restriction}
                       </span>
                     ))}
 
-                  {/* Meal Format chip - GREEN for food */}
-                  {cboMap[org.id]?.meal_format && (
-                    <span className="px-3 py-1 rounded-full text-xs" style={{ backgroundColor: '#B6F3C7', color: '#333' }}>
-                      {cboMap[org.id].meal_format}
-                    </span>
-                  )}
-
-                  {/* Serves Youth - BLUE for service */}
-                  {(cboMap[org.id]?.program_serving_minors === true || cboMap[org.id]?.serves_minors === true) && (
-                    <span className="px-3 py-1 rounded-full text-xs" style={{ backgroundColor: '#C5F1FF', color: '#333' }}>
-                      Serves Youth
-                    </span>
-                  )}
-
-                  {/* Open Distribution - BLUE for service */}
-                  {cboMap[org.id]?.open_distribution === true && (
-                    <span className="px-3 py-1 rounded-full text-xs" style={{ backgroundColor: '#C5F1FF', color: '#333' }}>
-                      Open Distribution
-                    </span>
-                  )}
-                </div>
-              )}
+                    {/* Default: Distribution tag (only if no priority tags) */}
+                    {!hasPriorityTags && cboInfo?.open_distribution != null && (
+                      <span className="px-3 py-1 rounded-full text-xs" style={{ backgroundColor: '#C5F1FF', color: '#333' }}>
+                        {cboInfo.open_distribution === true ? "Open Distribution" : "Selective Distribution"}
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
             </button>
           );
 

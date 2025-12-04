@@ -32,6 +32,7 @@ export default function RestaurantDetailPopup({
     open_distribution: boolean;
     program_serving_minors: boolean;
     volunteer_opportunities: boolean;
+    percent_below_poverty_served: number | null;
   }
   
   const [restaurantMap, setRestaurantMap] = useState<Record<any, any>>({});
@@ -156,6 +157,11 @@ export default function RestaurantDetailPopup({
                 ? cbo.cuisine_preference.split(";").map((c) => c.trim())
                 : [];
 
+              const povertyLine = cbo.percent_below_poverty_served;
+              const servesMinors = cbo.program_serving_minors === true;
+              const dietaryRestrictions = cuisines.filter((c: string) => c.includes("Halal") || c.includes("Kosher"));
+              const hasPriorityTags = (povertyLine != null && povertyLine > 25) || servesMinors || dietaryRestrictions.length > 0;
+
               return (
                 <div
                   key={index}
@@ -173,29 +179,22 @@ export default function RestaurantDetailPopup({
                   </h3>
 
                   <div className="flex gap-2 flex-wrap">
-                    {/* Cuisine Preference Chips - GREEN for food */}
-                    {cuisines.map((cuisine, idx) => (
-                      <span
-                        key={`cuisine-${idx}`}
-                        className="px-3 py-1 rounded-full text-xs"
-                        style={{ backgroundColor: "#B6F3C7", color: "#333" }}
-                      >
-                        {cuisine}
-                      </span>
-                    ))}
-
-                    {/* Meal Format - GREEN for food */}
-                    {cbo.meal_format && (
+                    {/* Priority 1: Poverty tags - BLUE for service */}
+                    {povertyLine != null && povertyLine > 25 && (
                       <span
                         className="px-3 py-1 rounded-full text-xs"
-                        style={{ backgroundColor: "#B6F3C7", color: "#333" }}
+                        style={{ backgroundColor: "#C5F1FF", color: "#333" }}
                       >
-                        {cbo.meal_format}
+                        {povertyLine > 75
+                          ? ">75% Below Poverty Line"
+                          : povertyLine > 50
+                          ? ">50% Below Poverty Line"
+                          : ">25% Below Poverty Line"}
                       </span>
                     )}
 
-                    {/* Serves Youth - BLUE for service */}
-                    {cbo.program_serving_minors && (
+                    {/* Priority 2: Serves Youth - BLUE for service */}
+                    {servesMinors && (
                       <span
                         className="px-3 py-1 rounded-full text-xs"
                         style={{ backgroundColor: "#C5F1FF", color: "#333" }}
@@ -204,13 +203,26 @@ export default function RestaurantDetailPopup({
                       </span>
                     )}
 
-                    {/* Open Distribution - BLUE for service */}
-                    {cbo.open_distribution && (
+                    {/* Priority 3: Dietary Restrictions - GREEN for food */}
+                    {dietaryRestrictions.map((restriction: string, idx: number) => (
+                      <span
+                        key={`dietary-${idx}`}
+                        className="px-3 py-1 rounded-full text-xs"
+                        style={{ backgroundColor: "#B6F3C7", color: "#333" }}
+                      >
+                        {restriction}
+                      </span>
+                    ))}
+
+                    {/* Default: Distribution tag (only if no priority tags) - BLUE for service */}
+                    {!hasPriorityTags && cbo.open_distribution != null && (
                       <span
                         className="px-3 py-1 rounded-full text-xs"
                         style={{ backgroundColor: "#C5F1FF", color: "#333" }}
                       >
-                        Open Distribution
+                        {cbo.open_distribution === true
+                          ? "Open Distribution"
+                          : "Selective Distribution"}
                       </span>
                     )}
                   </div>

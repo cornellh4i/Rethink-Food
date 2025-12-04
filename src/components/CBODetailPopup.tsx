@@ -187,7 +187,9 @@ export default function CBODetailPopup({
                 {cuisine}
               </span>
             ))}
-            {cboData?.meal_format && (
+            {cboData?.meal_format && 
+             cboData.meal_format !== "Hot IMs" && 
+             cboData.meal_format !== "Cold IMs" && (
               <span
                 className="text-xs px-3 py-1 rounded-full"
                 style={{ backgroundColor: "#B6F3C7", color: "#333" }}
