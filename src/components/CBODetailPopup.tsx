@@ -71,12 +71,7 @@ export default function CBODetailPopup({
       return c;
     })
     .filter((value, index, self) => self.indexOf(value) === index); 
-  console.log(dietaryRestrictions)
 
-  console.log("povertyLine:", povertyLine);
-  console.log("dietaryRestrictions:", dietaryRestrictions);
-  console.log("servesMinors:", servesMinors);
-  console.log("open_distribution:", cboData?.open_distribution);
 
   return (
     <div className="w-full">
