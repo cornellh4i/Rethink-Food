@@ -7,6 +7,7 @@ import { supabase } from "../../lib/supabaseClient";
 import { FilterProvider, useFilter } from "../context/FilterContext";
 import FilterBar from "@/components/FilterBar";
 import OrganizationDetailPopup from "@/components/OrganizationDetailPopup";
+import MetricBar from "@/components/MetricBar";
 
 export type Organization = {
   id: number | string;
@@ -29,6 +30,7 @@ export type Organization = {
 function HomeContent() {
   const { isFilterActive, closeSidebar, allDestinations } = useFilter();
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
+  const [selectedCBO, setSelectedCBO] = useState<Organization | null>(null);
 
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const router = useRouter();
@@ -55,12 +57,18 @@ function HomeContent() {
 
   useEffect(() => {
     setSelectedOrg(null);
+    setSelectedCBO(null);
   }, [isFilterActive]);
 
   const handleCBOIdSelect = (cboId: number) => {
     const fullCBOOrg = allDestinations.find(org => org.id === cboId);
     if (fullCBOOrg) {
       setSelectedOrg(fullCBOOrg);
+      if (fullCBOOrg?.org_type?.toLowerCase() === 'cbo') {
+        setSelectedCBO(fullCBOOrg);
+      } else {
+        setSelectedCBO(null);
+      }
     }
   };
 
@@ -68,6 +76,11 @@ function HomeContent() {
     const fullRestaurantOrg = allDestinations.find(org => org.id === restaurantId);
     if (fullRestaurantOrg) {
       setSelectedOrg(fullRestaurantOrg);
+      if (fullRestaurantOrg?.org_type?.toLowerCase() === 'cbo') {
+        setSelectedCBO(fullRestaurantOrg);
+      } else {
+        setSelectedCBO(null);
+      }
     }
   };
 
@@ -89,6 +102,11 @@ function HomeContent() {
             <OrgList
               onOrganizationSelect={(org) => {
                 setSelectedOrg(org);
+                if (org?.org_type?.toLowerCase() === 'cbo') {
+                  setSelectedCBO(org);
+                } else {
+                  setSelectedCBO(null);
+                }
               }}
             />
           </div>
@@ -98,14 +116,26 @@ function HomeContent() {
       <div className="flex-1 relative min-w-0 w-full h-full">
         <Map 
           selectedOrg={selectedOrg}
-          onOrganizationSelect={(org) => setSelectedOrg(org)}
+          onOrganizationSelect={(org) => {
+            setSelectedOrg(org);
+            if (org?.org_type?.toLowerCase() === 'cbo') {
+              setSelectedCBO(org);
+            } else {
+              setSelectedCBO(null);
+            }
+          }}
         />
 
         {selectedOrg && (
-          <div className="absolute bottom-4 left-4 right-4 md:left-8 md:right-auto md:max-w-md z-30">
+          <div className={`absolute left-4 right-4 md:left-8 md:right-auto md:max-w-md z-50 transition-all ${
+            selectedCBO ? 'bottom-[200px]' : 'bottom-4'
+          }`}>
             <OrganizationDetailPopup
               org={selectedOrg}
-              onClose={() => setSelectedOrg(null)}
+              onClose={() => {
+                setSelectedOrg(null);
+                setSelectedCBO(null);
+              }}
               onCBOIdSelect={handleCBOIdSelect}
               onRestaurantIdSelect={handleRestaurantIdSelect}
             />
@@ -115,9 +145,20 @@ function HomeContent() {
 
       <div className="absolute top-10 left-4 z-40 pointer-events-none">
         <div className="pointer-events-auto">
-          <FilterBar onOrganizationSelect={(org) => setSelectedOrg(org)} />
+          <FilterBar />
         </div>
       </div>
+
+      {/* Metric Bar - Appears at bottom when CBO is selected */}
+      {selectedCBO && (
+        <MetricBar 
+          organization={selectedCBO} 
+          onClose={() => {
+            setSelectedCBO(null);
+            // Don't close selectedOrg - keep the popup open
+          }} 
+        />
+      )}
     </div>
   );
 }
