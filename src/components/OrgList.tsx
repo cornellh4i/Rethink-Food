@@ -115,21 +115,6 @@ export default function OrgList({
                 </p>
 
                 <div className="flex gap-2 flex-wrap">
-                  {/* Meals served - BLUE for service */}
-                  {org.number_of_meals != null &&
-                    org.number_of_meals > 0 &&
-                    org.number_of_meals >= 100 && (
-                      <span
-                        className="px-3 py-1 rounded-full text-xs"
-                        style={{ backgroundColor: '#C5F1FF', color: '#333' }}
-                      >
-                        {org.number_of_meals >= 1000
-                          ? "1000+ meals served"
-                          : org.number_of_meals >= 500
-                          ? "500+ meals served"
-                          : "100+ meals served"}
-                      </span>
-                    )}
                   {/* Cuisine - GREEN for food */}
                   {restaurantData?.cuisine &&
                     restaurantData.cuisine
