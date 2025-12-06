@@ -145,14 +145,7 @@ function HomeContent() {
 
       <div className="absolute top-10 left-4 z-40 pointer-events-none">
         <div className="pointer-events-auto">
-          <FilterBar onOrganizationSelect={(org) => {
-            setSelectedOrg(org);
-            if (org?.org_type?.toLowerCase() === 'cbo') {
-              setSelectedCBO(org);
-            } else {
-              setSelectedCBO(null);
-            }
-          }} />
+          <FilterBar />
         </div>
       </div>
 

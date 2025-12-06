@@ -29,37 +29,26 @@ const BOROUGHS = [
   "Staten Island",
 ];
 
-export default function FilterBar({ onOrganizationSelect }: { onOrganizationSelect?: (org: any) => void }) {
-  const { 
-    applyFilter, 
-    resetFilters, 
-    searchQuery, 
-    setSearchQuery, 
-    selectedType, 
-    selectedBoroughs, 
-    allDestinations, 
+export default function FilterBar() {
+  const {
+    applyFilter,
+    resetFilters,
+    searchQuery,
+    setSearchQuery,
+    selectedType,
+    selectedBoroughs,
     setIsFilterActive,
-    activeFilterCount 
+    activeFilterCount
   } = useFilter();
   
   const [isBoroughDropdownOpen, setIsBoroughDropdownOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
 
   useEffect(() => {
     if (searchQuery.trim()) {
-      const searchLower = searchQuery.toLowerCase().trim();
-      const matches = allDestinations
-        .filter((org) => org.name?.toLowerCase().includes(searchLower))
-        .slice(0, 5);
-      setSearchResults(matches);
-      setShowSearchDropdown(matches.length > 0);
-    } else {
-      setSearchResults([]);
-      setShowSearchDropdown(false);
+      setIsFilterActive(true);
     }
-  }, [searchQuery, allDestinations]);
+  }, [searchQuery, setIsFilterActive]);
 
   const handleTypeFilterClick = (filterValue: string) => {
     applyFilter({ type: "orgType", value: filterValue });
@@ -93,28 +82,6 @@ export default function FilterBar({ onOrganizationSelect }: { onOrganizationSele
             icon={faSearch}
             className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"
           />
-          
-          {showSearchDropdown && (
-            <div className="absolute mt-2 bg-white rounded-lg shadow-lg py-2 min-w-[300px] max-w-[400px] z-50">
-              {searchResults.map((org) => (
-                <button
-                  key={org.id}
-                  onClick={() => {
-                    setShowSearchDropdown(false);
-                    setSearchQuery("");
-                    setIsFilterActive(true);
-                    onOrganizationSelect?.(org);
-                  }}
-                  className="w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors"
-                >
-                  <div className="font-semibold text-black">{org.name}</div>
-                  <div className="text-sm text-gray-600">
-                    {org.org_type === "restaurant" ? "Restaurant" : "CBO"} · {org.borough}
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* Sort/Filter Modal Button */}
