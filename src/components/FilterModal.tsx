@@ -46,14 +46,28 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
   const [localOtherFilters, setLocalOtherFilters] = useState<string[]>(selectedOtherFilters);
   const [localPovertyThreshold, setLocalPovertyThreshold] = useState<number>(selectedPovertyThreshold);
   const [localCuisines, setLocalCuisines] = useState<string[]>(selectedCuisines);
-  const [cuisineInput, setCuisineInput] = useState("");
-  const [selectedCityCouncilDistrictInput, setSelectedCityCouncilDistrictInput] = useState("");
-  
+
   // Get unique cuisines from all destinations
   const availableCuisines = Array.from(
     new Set(
       allDestinations
-        .flatMap(dest => dest.cuisine || [])
+        .flatMap(dest => {
+          if (!dest.cuisine) return [];
+
+          // Handle string format
+          if (typeof dest.cuisine === 'string') {
+            // CBOs use semicolon-separated, restaurants use comma-separated
+            const separator = dest.cuisine.includes(';') ? ';' : ',';
+            return dest.cuisine.split(separator).map((c: string) => c.trim()).filter((c: string) => c.length > 0);
+          }
+
+          // Handle array format (fallback)
+          if (Array.isArray(dest.cuisine)) {
+            return dest.cuisine;
+          }
+
+          return [];
+        })
         .filter(c => c && !["Halal", "Kosher"].includes(c))
     )
   ).sort();
@@ -82,6 +96,15 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
   const toggleDistrict = (district: number) => {
     const districtStr = district.toString();
     setLocalDistricts(prev =>
+      prev.includes(districtStr)
+        ? prev.filter(d => d !== districtStr)
+        : [...prev, districtStr]
+    );
+  };
+
+  const toggleCityCouncilDistrict = (district: number) => {
+    const districtStr = district.toString();
+    setLocalCityCouncilDistricts(prev =>
       prev.includes(districtStr)
         ? prev.filter(d => d !== districtStr)
         : [...prev, districtStr]
@@ -145,6 +168,10 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
     setLocalDistricts(prev => prev.filter(d => d !== district));
   };
 
+  const removeCityCouncilDistrict = (district: string) => {
+    setLocalCityCouncilDistricts(prev => prev.filter(d => d !== district));
+  };
+
   const removeCuisine = (cuisine: string) => {
     setLocalCuisines(prev => prev.filter(c => c !== cuisine));
   };
@@ -168,7 +195,7 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
         onClick={onClose}
       />
       
-      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto z-[10000] shadow-2xl">
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto overflow-x-visible z-[10000] shadow-2xl">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
@@ -176,7 +203,7 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
           <FontAwesomeIcon icon={faXmark} className="w-6 h-6" />
         </button>
 
-        <h2 className="text-2xl font-bold text-center mb-6 text-black">Filter CBOs</h2>
+        <h2 className="text-2xl font-bold text-center mb-6 text-black">Filter Partners</h2>
 
         {/* Region Selector */}
         <div className="mb-6">
@@ -278,15 +305,41 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
         {/* City Council Districts */}
         <div className="mb-6">
           <h3 className="text-base font-semibold mb-3 text-black">City Council Districts</h3>
+
+          {/* Selected Districts */}
+          {localCityCouncilDistricts.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {localCityCouncilDistricts.map((district) => (
+                <button
+                  key={district}
+                  onClick={() => removeCityCouncilDistrict(district)}
+                  className="px-4 py-2 rounded-full bg-[#A8D5BA] text-black text-sm font-medium flex items-center gap-2"
+                >
+                  <span>{district}</span>
+                  <span className="text-lg font-bold">×</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Dropdown */}
           <div className="relative">
             <select
               className="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500 appearance-none"
-              value={selectedCityCouncilDistrictInput}
-              onChange={(e) => setSelectedCityCouncilDistrictInput(e.target.value)}
+              value=""
+              onChange={(e) => {
+                if (e.target.value) {
+                  toggleCityCouncilDistrict(parseInt(e.target.value));
+                }
+              }}
             >
               <option value="">Select a district</option>
               {Array.from({ length: 51 }, (_, i) => i + 1).map((district) => (
-                <option key={district} value={district}>
+                <option
+                  key={district}
+                  value={district}
+                  disabled={localCityCouncilDistricts.includes(district.toString())}
+                >
                   District {district}
                 </option>
               ))}
@@ -343,7 +396,7 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
         {/* Cuisine */}
         <div className="mb-6">
           <h3 className="text-base font-semibold mb-3 text-black">Cuisine</h3>
-          
+
           {/* Selected Cuisines */}
           {localCuisines.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-3">
@@ -359,38 +412,33 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
               ))}
             </div>
           )}
-          
+
+          {/* Dropdown */}
           <div className="relative">
-            <input
-              type="text"
-              placeholder="Type a cuisine"
-              value={cuisineInput}
-              onChange={(e) => setCuisineInput(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
+            <select
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500 appearance-none"
+              value=""
+              onChange={(e) => {
+                if (e.target.value) {
+                  toggleCuisine(e.target.value);
+                }
+              }}
+            >
+              <option value="">Select a cuisine</option>
+              {availableCuisines.map((cuisine) => (
+                <option
+                  key={cuisine}
+                  value={cuisine}
+                  disabled={localCuisines.includes(cuisine)}
+                >
+                  {cuisine}
+                </option>
+              ))}
+            </select>
             <FontAwesomeIcon
               icon={faChevronDown}
               className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
             />
-            
-            {cuisineInput && (
-              <div className="absolute mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto z-50">
-                {availableCuisines
-                  .filter(c => c.toLowerCase().includes(cuisineInput.toLowerCase()))
-                  .map((cuisine) => (
-                    <button
-                      key={cuisine}
-                      onClick={() => {
-                        toggleCuisine(cuisine);
-                        setCuisineInput("");
-                      }}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
-                    >
-                      {cuisine}
-                    </button>
-                  ))}
-              </div>
-            )}
           </div>
         </div>
 

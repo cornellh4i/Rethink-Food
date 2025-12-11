@@ -52,20 +52,28 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [orgsRes, cbosRes] = await Promise.all([
+        const [orgsRes, cbosRes, restaurantsRes] = await Promise.all([
           fetch("/api/organizations"),
-          fetch("/api/cbos")
+          fetch("/api/cbos"),
+          fetch("/api/restaurants")
         ]);
 
         const orgsData = await orgsRes.json();
         const cbosData = await cbosRes.json();
+        const restaurantsData = await restaurantsRes.json();
 
         const organizations = orgsData.organizations || [];
         const cbos = cbosData.cbos || [];
+        const restaurants = restaurantsData.restaurants || [];
 
         const cboDataMap: Record<string, any> = {};
         cbos.forEach((cbo: any) => {
           cboDataMap[cbo.id] = cbo;
+        });
+
+        const restaurantDataMap: Record<string, any> = {};
+        restaurants.forEach((restaurant: any) => {
+          restaurantDataMap[restaurant.id] = restaurant;
         });
 
         const mergedOrganizations = organizations.map((org: any) => {
@@ -77,24 +85,43 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
               volunteer_opportunities: cboData.volunteer_opportunities,
               program_serving_minors: cboData.program_serving_minors,
               cuisine_preference: cboData.cuisine_preference,
-              cuisine: cboData.cuisine || [],
+              // For CBOs, cuisine comes from cuisine_preference (semicolon-separated string)
+              cuisine: cboData.cuisine_preference || "",
               meal_format: cboData.meal_format,
               annual_funding_goal: cboData.annual_funding_goal,
               quarter_funding_goal: cboData.quarter_funding_goal,
-              congressional_district: cboData.congressional_district,
-              city_council_district: cboData.city_council_district,
+              congressional_district: cboData.congressional_district ?? org.congressional_district,
+              city_council_district: cboData.city_council_district ?? org.city_council_district,
               percent_below_poverty_served: cboData.percent_below_poverty_served,
-              meal_count: cboData.meal_count !== undefined && cboData.meal_count !== null 
-                ? cboData.meal_count 
+              meal_count: cboData.meal_count !== undefined && cboData.meal_count !== null
+                ? cboData.meal_count
                 : (org.number_of_meals !== undefined && org.number_of_meals !== null ? org.number_of_meals : undefined),
-              write_up: cboData.write_up && cboData.write_up.trim() 
-                ? cboData.write_up 
+              write_up: cboData.write_up && cboData.write_up.trim()
+                ? cboData.write_up
                 : (org.writeup && org.writeup.trim() ? org.writeup : undefined),
             };
+          } else if (org.org_type === 'restaurant' && restaurantDataMap[org.id]) {
+            const restaurantData = restaurantDataMap[org.id];
+            return {
+              ...org,
+              // For restaurants, cuisine is a comma-separated string
+              cuisine: restaurantData.cuisine,
+              congressional_district: restaurantData.congressional_district ?? org.congressional_district,
+              city_council_district: restaurantData.city_council_district ?? org.city_council_district,
+            };
           }
+          // For orgs without additional data, preserve all fields from org
           return org;
         });
 
+        console.log("Sample organizations with districts:",
+          mergedOrganizations.slice(0, 5).map((org: any) => ({
+            name: org.name,
+            type: org.org_type,
+            congressional_district: org.congressional_district,
+            city_council_district: org.city_council_district
+          }))
+        );
         setAllDestinations(mergedOrganizations);
       } catch (err) {
         console.error("Error fetching organizations:", err);
@@ -223,11 +250,21 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       });
     }
 
-    // Dietary Restrictions filter (Halal/Kosher from cuisine array)
+    // Dietary Restrictions filter (Halal/Kosher from cuisine)
     if (selectedDietary.length > 0) {
       filtered = filtered.filter(dest => {
-        const cuisines = dest.cuisine || [];
-        return selectedDietary.some(dietary => cuisines.includes(dietary));
+        if (!dest.cuisine) return false;
+
+        // Parse cuisines from string (semicolon or comma-separated) or array
+        let cuisineList: string[] = [];
+        if (typeof dest.cuisine === 'string') {
+          const separator = dest.cuisine.includes(';') ? ';' : ',';
+          cuisineList = dest.cuisine.split(separator).map((c: string) => c.trim());
+        } else if (Array.isArray(dest.cuisine)) {
+          cuisineList = dest.cuisine;
+        }
+
+        return selectedDietary.some(dietary => cuisineList.includes(dietary));
       });
     }
 
@@ -236,7 +273,7 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       filtered = filtered.filter(dest => {
         const povertyPercent = dest.percent_below_poverty_served;
         if (povertyPercent === null || povertyPercent === undefined) return false;
-        
+
         // Threshold logic:
         // 25 -> show orgs with <= 25% poverty
         // 50 -> show orgs with <= 50% poverty
@@ -249,8 +286,18 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     // Cuisine filter (excluding Halal/Kosher which are in dietary)
     if (selectedCuisines.length > 0) {
       filtered = filtered.filter(dest => {
-        const cuisines = dest.cuisine || [];
-        return selectedCuisines.some(cuisine => cuisines.includes(cuisine));
+        if (!dest.cuisine) return false;
+
+        // Parse cuisines from string (semicolon or comma-separated) or array
+        let cuisineList: string[] = [];
+        if (typeof dest.cuisine === 'string') {
+          const separator = dest.cuisine.includes(';') ? ';' : ',';
+          cuisineList = dest.cuisine.split(separator).map((c: string) => c.trim());
+        } else if (Array.isArray(dest.cuisine)) {
+          cuisineList = dest.cuisine;
+        }
+
+        return selectedCuisines.some(cuisine => cuisineList.includes(cuisine));
       });
     }
 
